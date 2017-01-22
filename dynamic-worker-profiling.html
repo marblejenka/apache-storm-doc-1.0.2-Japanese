@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Dynamic Worker Profiling</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Dynamic Worker Profiling</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>マルチテナントモードでは、ユーザーにsudoアクセスすることなく、長期間実行されるJVMをクラスタ全体で起動します。これらのJVMに対するJavaヒープ・ダンプ、jstacks、およびJavaプロファイリングのセルフ・サービスは、ユーザーが能動的にモニタリングする際に、問題を分析・デバッグする能力を向上させます。</p>
+
+<p>Stormの動的プロファイラを使用すると、ストッククラスタ上で実行されているワーカーのjvmにおけるヒープダンプ、jprofileまたはjstackを動的に取得できます。ユーザーはこれらのダンプをブラウザーからダウンロードし、お気に入りのツールを使用して解析することができます。UIコンポーネント・ページには、各コンポーネントにおけるワーカーの一覧と、それらに対するアクションボタンが用意されています。 logviewerを使用すると、これらのログによって生成されたダンプをダウンロードできます。 詳細はスクリーンショットをご覧ください。</p>
+
+<h2 id="using-the-storm-ui">Using the Storm UI</h2>
+
+<p>ヒープ・ダンプ、jstack、jprofileの開始/停止/ダンプ、またはワーカーの再起動を要求するには、実行中のトポロジをクリックのうえ特定のコンポーネントをクリックします。次に、表&quot;Executors&quot;でワーカーのエグゼキュータのボックスをチェックしてワーカーを選択します。さらに、&quot;Profiling and Debugging&quot;セクションの &quot;Start&quot;、 &quot;Heap&quot;、 &quot;Jstack&quot;または &quot;Restart Worker&quot;をクリックします。</p>
+
+<p><img src="images/dynamic_profiling_debugging_4.png" alt="Selecting Workers" title="Selecting Workers"></p>
+
+<p>表&quot;Executors&quot;で、エグゼキュータの隣にある列&quot;Actions&quot;のチェック・ボックスをクリックすると、同じワーカーに属する他のエグゼキュータが自動的に選択されます。アクションが完了すると、作成された出力ファイルは列&quot;アクション&quot;のリンクに表示されます。</p>
+
+<p><img src="images/dynamic_profiling_debugging_1.png" alt="Profiling and Debugging" title="Profiling and Debugging"></p>
+
+<p>jprofileを開始するには、タイムアウトを分単位で指定します（必要でない場合はとする10）。次に、「開始」をクリックします。</p>
+
+<p><img src="images/dynamic_profiling_debugging_2.png" alt="After starting jprofile for worker" title="After jprofile for worker "></p>
+
+<p>jprofileログを停止するには、“Stop”ボタンをクリックします。 これによりjprofileの統計情報がダンプされ、プロファイリングが停止されます。行をUIから消すには、ページを更新します。</p>
+
+<p>My Dump Files&quot;をクリックして、ワーカー固有のダンプファイルのリストを表示するためのログビューワーのUIを表示できます。</p>
+
+<p><img src="images/dynamic_profiling_debugging_3.png" alt="Dump Files Links for worker" title="Dump Files Links for worker"></p>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>&quot;worker.profiler.command&quot;は、特定のプラグイン可能なプロファイラ、heapdumpコマンドを指すように設定できます。プラグインが利用できない場合、またはjdkがJprofileのフライト記録をサポートしていない場合、&quot;worker.profiler.enabled&quot;を無効にすることができます。このため、ワーカーJVMオプションには&quot;worker.profiler.childopts&quot;がありません。別のプロファイラプラグインを使用するには、これらの設定を変更してください。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Storm Metrics</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Storm Metrics</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>Stormは、トポロジ全体の要約統計情報をレポートするために、メトリクスについてのインターフェイスを公開しています。
+この情報はNimbusのUIコンソールに表示される数字をトラッキングするために内部的に使用されています。処理した数やackの数; boltあたりの平均プロセス待ち時間; ワーカーヒープの使用状況; 等々。</p>
+
+<h3 id="metric-types">Metric Types</h3>
+
+<p>メトリクスは、ただ一つのメソッドを持つ<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/IMetric.java"><code>IMetric</code></a>を実装する必要があります。そのメソッドは、<code>getValueAndReset</code>です - 要約値を見つけるための作業を行い、初期状態に戻します。たとえば、MeanReducerは、累積合計を累積の個数で除算して平均を求め、次に両方の値をゼロに初期化します。</p>
+
+<p>Stormは以下のようなメトリクスを提供します:</p>
+
+<ul>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/AssignableMetric.java">AssignableMetric</a> -- 指定した明示的な値にメトリクスを設定する。それが外部の値である場合や、すでに要約統計量を自分で計算している場合に役立ちます。</li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/CombinedMetric.java">CombinedMetric</a> -- 関連付けて更新可能なメトリクスの汎用インタフェース。</li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/CountMetric.java">CountMetric</a> -- 指定された値の実行時の合計です。<code>incr()</code>を呼び出すとインクリメントし、<code>incrBy(n)</code>は与えられた数値を加算/減算します。
+
+<ul>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/MultiCountMetric.java">MultiCountMetric</a> -- CountMetricのハッシュマップ。</li>
+</ul></li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/ReducedMetric.java">ReducedMetric</a>
+
+<ul>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/MeanReducer.java">MeanReducer</a> -- <code>reduce()</code>メソッドに与えられた値の移動平均をトラッキングします。(<code>Double</code>、<code>Integer</code>または<code>Long</code>の値を受け取り、内部平均を「Double」として維持します。)彼の評判に反して、MeanReducerは実際にはかなり良い人です。</li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/MultiReducedMetric.java">MultiReducedMetric</a> -- ReducedMetricのハッシュマップ。</li>
+</ul></li>
+</ul>
+
+<h3 id="metrics-consumer">Metrics Consumer</h3>
+
+<p>トポロジにMetrics Consumerを登録することで、トポロジに対するのメトリクスをリッスン・処理できます。</p>
+
+<p>Metrics Consumerをトポロジに登録するには、トポロジの設定に次のように追加します:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">conf</span><span class="o">.</span><span class="na">registerMetricsConsumer</span><span class="o">(</span><span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">storm</span><span class="o">.</span><span class="na">metric</span><span class="o">.</span><span class="na">LoggingMetricsConsumer</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+</code></pre></div>
+<p><a href="javadocs/org/apache/storm/Config.html#registerMetricsConsumer-java.lang.Class-">Config#registerMetricsConsumer</a> と、javadocにあるオーバーロードされたメソッドを参照できます。</p>
+
+<p>あるいは、storm.yaml設定ファイルを編集します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">topology.metrics.consumer.register</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">class</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.metric.LoggingMetricsConsumer"</span>
+    <span class="s">parallelism.hint</span><span class="pi">:</span> <span class="s">1</span>
+  <span class="pi">-</span> <span class="s">class</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.metric.HttpForwardingMetricsConsumer"</span>
+    <span class="s">parallelism.hint</span><span class="pi">:</span> <span class="s">1</span>
+    <span class="s">argument</span><span class="pi">:</span> <span class="s2">"</span><span class="s">http://example.com:8080/metrics/my-topology/"</span>
+</code></pre></div>
+<p>Stormは、登録された各メトリック・コンシューマごとにMetricsConsumerBoltをトポロジに内部的に追加し、各MetricsConsumerBoltはすべてのタスクからメトリックを受信するようにサブスクライブします。そのBoltの並列性は <code>parallelism.hint</code>に設定され、そのBoltの<code>component id</code>は<code>__metrics_ &lt;metrics consumer class name&gt;</code>に設定されます。同じクラス名を複数回登録すると、コンポーネントIDの末尾に<code>#&lt;sequence number&gt;</code>が追加されます。</p>
+
+<p>Stormには、トポロジにどんなメトリックが提供されているかを試すための組込みメトリックコンシューマが用意されています。</p>
+
+<ul>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/LoggingMetricsConsumer.java"><code>LoggingMetricsConsumer</code></a> -- すべてのメトリックをリッスンし、TSV（タブ区切り値）ファイルにログを記録します 。</li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/HttpForwardingMetricsConsumer.java"><code>HttpForwardingMetricsConsumer</code></a> -- HTTP経由で設定されたURLにシリアル化されたすべてのメトリックとPOSTをリッスンします。Stormは抽象クラスとして<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/HttpForwardingMetricsServer.java"><code>HttpForwardingMetricsServer</code></a>を提供ており、これを継承したクラスをHTTPサーバーとして実行することができ、HttpForwardingMetricsConsumerによって送信されたメトリックを処理します。</li>
+</ul>
+
+<p>また、StormはMetrics Consumerを実装するためのインタフェース<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/metric/api/IMetricsConsumer.java"><code>IMetricsConsumer</code></a>を公開しているため、カスタムのMetrics Consumerを作成してトポロジにアタッチしたり、Stormコミュニティが提供するMetrics Consumersの他の優れた実装を使用することができます。例として、<a href="https://github.com/verisign/storm-graphite">versign/storm-graphite</a>や<a href="https://github.com/endgameinc/storm-metrics-statsd">storm-metrics-statsd</a>があります。</p>
+
+<p>独自のメトリックスコンシューマを実装する場合、<a href="javadocs/org/apache/storm/metric/api/IMetricsConsumer.html#prepare-java.util.Map-java.lang.Object-org.apache.storm.task.TopologyContext-org.apache.storm.task.IErrorReporter-">IMetricsConsumer#prepare</a>が呼び出されたときに<code>argument</code>がオブジェクトに渡されるので、yamlに推測したJavaの型を設定し、明示的なキャストを行う必要があります。</p>
+
+<p>MetricsConsumerBoltはBoltの一種であり、登録されたMetrics Consumerが受信したメトリックを処理できない場合にトポロジ全体のスループットが低下するため、通常のBoltのようにこれらのBoltを処理したい場合があります。これを避けるためのアイデアの1つは、Metrics Consumerの実装を<code>non-blocking</code>方式にすることです。</p>
+
+<h3 id="build-your-own-metric-task-level">Build your own metric (task level)</h3>
+
+<p>Metric Registryに<code>IMetric</code>を登録することで、独自のメトリックを測定できます。</p>
+
+<p>Bolt＃executeの実行回数を計測したいとします。メトリックインスタンスの定義から始めましょう。CountMetricは私たちのユースケースに合っているようです。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kd">transient</span> <span class="n">CountMetric</span> <span class="n">countMetric</span><span class="o">;</span>
+</code></pre></div>
+<p>上記ではtransientとして定義しています。IMerticはシリアライズできないため、シリアライゼーションの問題を避けるためにtransientを使用しています。</p>
+
+<p>次に、メトリックインスタンスを初期化して登録しましょう。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">prepare</span><span class="o">(</span><span class="n">Map</span> <span class="n">conf</span><span class="o">,</span> <span class="n">TopologyContext</span> <span class="n">context</span><span class="o">,</span> <span class="n">OutputCollector</span> <span class="n">collector</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// other intialization here.</span>
+    <span class="n">countMetric</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountMetric</span><span class="o">();</span>
+    <span class="n">context</span><span class="o">.</span><span class="na">registerMetric</span><span class="o">(</span><span class="s">"execute_count"</span><span class="o">,</span> <span class="n">countMetric</span><span class="o">,</span> <span class="mi">60</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>1番目と2番目のパラメータの意味は、IMetricの単純なメトリック名とインスタンスです。<a href="javadocs/org/apache/storm/task/TopologyContext.html#registerMetric-java.lang.String-T-int-">TopologyContext#registerMetric</a>の3番目のパラメータは、メトリックをパブリッシュおよびリセットする期間（秒）です。</p>
+
+<p>最後に、Bolt.execute()が実行されたときに値を増やしましょう。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">execute</span><span class="o">(</span><span class="n">Tuple</span> <span class="n">input</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">countMetric</span><span class="o">.</span><span class="na">incr</span><span class="o">();</span>
+    <span class="c1">// handle tuple here.   </span>
+<span class="o">}</span>
+</code></pre></div>
+<p>トポロジメトリックのサンプルレートは、独自のメトリックには適用されません。これは、自らincr()を呼び出しているためです。</p>
+
+<p>完了!<code>countMetric.getValueAndReset()</code>は、登録された間隔である60秒ごとに呼び出され、 (&quot;execute_count&quot;, value)のペアはMetricsConsumerにプッシュされます。</p>
+
+<h3 id="build-your-own-metrics-worker-level">Build your own metrics (worker level)</h3>
+
+<p>独自のワーカー・レベル・メトリックは、<code>Config.WORKER_METRICS</code>に追加するとクラスタ内のすべてのワーカーに対して、または、<code>Config.TOPOLOGY_WORKER_METRICS</code>に追加することで特定のトポロジ内のすべてのワーカー用に、登録できます。</p>
+
+<p>たとえば、clusterのstorm.yamlに<code>worker.metrics</code>を追加することができます。</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">worker.metrics</span><span class="pi">:</span> 
+  <span class="s">metricA</span><span class="pi">:</span> <span class="s2">"</span><span class="s">aaa.bbb.ccc.ddd.MetricA"</span>
+  <span class="s">metricB</span><span class="pi">:</span> <span class="s2">"</span><span class="s">aaa.bbb.ccc.ddd.MetricB"</span>
+  <span class="s">...</span>
+</code></pre></div>
+<p>または、設定のマップにキー<code>Config.TOPOLOGY_WORKER_METRICS</code>を`<code>Map&lt;String, String&gt;</code>（メトリック名、メトリッククラス名）としてputしてください。</p>
+
+<p>ワーカーレベルのメトリックインスタンスにはいくつかの制限があります:</p>
+
+<p>A) ワーカーレベルのメトリックは、SystemBoltから初期化されて登録され、ユーザータスクには公開されていないため、計測器の一種である必要があります。</p>
+
+<p>B) メトリックはデフォルトのコンストラクタで初期化され、コンフィグレーションやオブジェクトの注入は行われません。</p>
+
+<p>C) メトリックのバケットサイズ（秒）は、<code>Config.TOPOLOGY_BUILTIN_METRICS_BUCKET_SIZE_SECS</code>に固定されます。</p>
+
+<h3 id="builtin-metrics">Builtin Metrics</h3>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/builtin_metrics.clj">組み込みのメトリクス</a>はStormに備えられています。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/builtin_metrics.clj">builtin_metrics.clj</a>は、組み込みメトリックのデータ構造、および他のフレームワークコンポーネントがそれらを更新するために使用できるファサードメソッドを用意しています。
+メトリック自体は、呼び出しているコードで計算されます -- たとえば、<code>clj/b/s/daemon/daemon/executor.clj</code>の<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/executor.clj#358"><code>ack-spout-msg</code></a>を参照。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Trident RAS API</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Trident RAS API</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h2 id="trident-ras-api">Trident RAS API</h2>
+
+<p>Trident RAS(Resource Aware Scheduler)APIは、ユーザーがTridentトポロジのリソース消費量を指定できるようにするメカニズムを提供します。APIはRAS APIとまったく同じように見えますが、BoltとSpoutの代わりにTrident Streamsで呼び出される点のみが異なります。</p>
+
+<p>ドキュメントの重複や矛盾を避けるため、リソース設定の目的と効果についてはここでは説明しませんが、<a href="Resource_Aware_Scheduler_overview.html">Resource Aware Scheduler Overview</a>に記載されています。</p>
+
+<h3 id="use">Use</h3>
+
+<p>まずは例から:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="n">TridentTopology</span> <span class="n">topo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TridentTopology</span><span class="o">();</span>
+    <span class="n">TridentState</span> <span class="n">wordCounts</span> <span class="o">=</span>
+        <span class="n">topology</span>
+            <span class="o">.</span><span class="na">newStream</span><span class="o">(</span><span class="s">"words"</span><span class="o">,</span> <span class="n">feeder</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">parallelismHint</span><span class="o">(</span><span class="mi">5</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setCPULoad</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setMemoryLoad</span><span class="o">(</span><span class="mi">512</span><span class="o">,</span><span class="mi">256</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">each</span><span class="o">(</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"sentence"</span><span class="o">),</span>  <span class="k">new</span> <span class="n">Split</span><span class="o">(),</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"word"</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">setCPULoad</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setMemoryLoad</span><span class="o">(</span><span class="mi">512</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">each</span><span class="o">(</span><span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"word"</span><span class="o">),</span> <span class="k">new</span> <span class="n">BangAdder</span><span class="o">(),</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"word!"</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">parallelismHint</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setCPULoad</span><span class="o">(</span><span class="mi">50</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setMemoryLoad</span><span class="o">(</span><span class="mi">1024</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">groupBy</span><span class="o">(</span><span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"word!"</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">persistentAggregate</span><span class="o">(</span><span class="k">new</span> <span class="n">MemoryMapState</span><span class="o">.</span><span class="na">Factory</span><span class="o">(),</span> <span class="k">new</span> <span class="n">Count</span><span class="o">(),</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"count"</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">setCPULoad</span><span class="o">(</span><span class="mi">100</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setMemoryLoad</span><span class="o">(</span><span class="mi">2048</span><span class="o">);</span>
+</code></pre></div>
+<p>リソースは、オペレーションごとに設定できます(グループ化、シャッフル、パーティション分割を除く)。
+Tridentが単一のボルトに統合したオペレーションは、そのリソースを合計します。</p>
+
+<p>ユーザー設定にかかわらず、すべてのBoltには<strong>少なくとも</strong>デフォルトのリソースが与えられます。</p>
+
+<p>上記の場合、私たちは
+In the above case, we end up with</p>
+
+<ul>
+<li>それぞれ20％のCPUロードと、512MiBのオン・ヒープと256MiBのオフ・ヒープのメモリロードとなるSpoutとSpout Coordinator</li>
+<li>SplitとBangAdderを組み合わせて60％のCPUロード(10％ + 50％)と1536MiB(1024 + 512)のメモリロードとなるBolt</li>
+<li>100％CPUロードと2048MiBオン・ヒープのメモリロードとなるBoltで、オフ・ヒープについてはデフォルト値。</li>
+</ul>
+
+<p>APIは必要な回数だけ呼び出すことができます。
+すべてのオペレーションの後で呼び出されたり、いくつかのオペレーションの後に呼び出される、parallelismHint()と同じ方法で使用されセクション全体のリソースを設定するなどがありえます。
+リソース宣言は、並列性ヒントと同じ<em>境界</em>を持ちます。グループ化、シャッフル、またはその他の種類のパーティション分割をまたぎません。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

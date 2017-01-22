@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Setting up a Storm Cluster</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Setting up a Storm Cluster</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>このページでは、Stormクラスタを起動して実行する手順を説明します。AWSを利用している場合は、<a href="https://github.com/nathanmarz/storm-deploy/wiki">storm-deploy</a>プロジェクトをチェックしてください。<a href="https://github.com/nathanmarz/storm-deploy/wiki">storm-deploy</a>は、EC2上のStormクラスタのプロビジョニング、設定、インストールを完全に自動化します。また、CPU、ディスク、ネットワークの使用状況を監視できるように、Gangliaを設定します。</p>
+
+<p>Stormクラスタで問題が発生した場合、最初に解決策が<a href="Troubleshooting.html">トラブルシューティング</a>ページにあるかどうかを確認してください。なければ、メーリングリストにメールしてください。</p>
+
+<p>Stormクラスタを設定する手順の概要を以下に示します:</p>
+
+<ol>
+<li>Zookeeperクラスタをセットアップする</li>
+<li>Nimbusとワーカーマシンに依存関係をインストールする</li>
+<li>NimbusとワーカーマシンにStormリリースをダウンロードして解凍する</li>
+<li>必須の設定をstorm.yamlに入力する</li>
+<li>&quot;storm&quot;スクリプトを使ってスーパーバイザーとその監視下に置かれるデーモンを起動する</li>
+</ol>
+
+<h3 id="set-up-a-zookeeper-cluster">Set up a Zookeeper cluster</h3>
+
+<p>StormはZookeeperを使用してクラスタを調整します。Zookeeperはメッセージの受け渡しには使用<strong>されない</strong>ので、StormにおけるZookeeperの負荷はかなり低くなります。ほとんどの場合、単一ノードのZookeeperクラスタで十分ですが、フェールオーバーが必要な場合や、大きなStormクラスタを展開する場合は、より大きなZookeeperクラスタが必要な場合があります。Zookeeperを配備する手順は<a href="http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html">こちら</a>です。</p>
+
+<p>Zookeeper導入に関するいくつかの注意点:</p>
+
+<ol>
+<li>Zookeeperはフェイル・ファストであり、エラーが発生した場合にプロセスを終了するので、監視のもとでZookeeperを実行することが重要です。詳細については、<a href="http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#sc_supervision">こちら</a>を参照してください。</li>
+<li>Zookeeperのデータとトランザクションログを圧縮にするためにcronを設定することが重要です。Zookeeperデーモンはこれを単独では実行しません。また、cronを設定しないと、Zookeeperはすぐにディスク領域を使い果たします。詳細については、<a href="http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#sc_maintenance">こちら</a>を参照してください。</li>
+</ol>
+
+<h3 id="install-dependencies-on-nimbus-and-worker-machines">Install dependencies on Nimbus and worker machines</h3>
+
+<p>次に、Nimbusとワーカーマシンに以下のStormの依存関係をインストールする必要があります:</p>
+
+<ol>
+<li>Java 7</li>
+<li>Python 2.6.6</li>
+</ol>
+
+<p>これらはStormでテストされた依存関係のバージョンです。StormはJavaやPythonの異なるバージョンで動作する場合と動作しない場合があります。</p>
+
+<h3 id="download-and-extract-a-storm-release-to-nimbus-and-worker-machines">Download and extract a Storm release to Nimbus and worker machines</h3>
+
+<p>次に、Stormリリースをダウンロードし、Nimbusと各ワーカーマシンのどこかでzipファイルを解凍します。Stormのリリースは<a href="http://github.com/apache/storm/releases">こちらから</a>からダウンロードできます。</p>
+
+<h3 id="fill-in-mandatory-configurations-into-storm-yaml">Fill in mandatory configurations into storm.yaml</h3>
+
+<p>Stormリリースの<code>conf/storm.yaml</code>がStormデーモンを設定するファイルです。デフォルトの設定値は<a href="http://github.com/apache/storm/blob/1.x-branch/conf/defaults.yaml">ここ</a>で見ることができます。storm.yamlはdefaults.yaml内のものをオーバーライドします。クラスタを稼働させるために必須の設定がいくつかあります:</p>
+
+<p>1) <strong>storm.zookeeper.servers</strong>: あなたのStormクラスタ用のZookeeperクラスタ内のホストのリストです。次のようになります:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">storm.zookeeper.servers</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s2">"</span><span class="s">111.222.333.444"</span>
+  <span class="pi">-</span> <span class="s2">"</span><span class="s">555.666.777.888"</span>
+</code></pre></div>
+<p>Zookeeperクラスタが使用するポートがデフォルトと異なる場合は、<strong>storm.zookeeper.port</strong>も設定する必要があります。</p>
+
+<p>2) <strong>storm.local.dir</strong>: NimbusとSupervisorのデーモンは、小さな状態（jar、confsなど）を格納するために、ローカルディスク上のディレクトリを必要とします。
+各マシンにそのディレクトリを作成し、適切な権限を与えてから、この設定にディレクトリの場所を入れておく必要があります。例えば:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">storm.local.dir</span><span class="pi">:</span> <span class="s2">"</span><span class="s">/mnt/storm"</span>
+</code></pre></div>
+<p>あなたがWindows上でStormを走らせると、それは次のようになります:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">storm.local.dir</span><span class="pi">:</span> <span class="s2">"</span><span class="s">C:</span><span class="se">\\</span><span class="s">storm-local"</span>
+</code></pre></div>
+<p>相対パスを使用すると、stormをインストールした場所(STORM_HOME)からの相対的なパスになります。
+空にするとデフォルト値<code>$STORM_HOME/storm-local</code>が使用されます。</p>
+
+<p>3) <strong>nimbus.seeds</strong>: ワーカーは、トポロジーのjarとconfをダウンロードするために、どのマシンがマスターの候補かを知る必要があります。例えば:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">nimbus.seeds</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">111.222.333.44"</span><span class="pi">]</span>
+</code></pre></div>
+<p><strong>マシンのFQDN</strong>の値を記入することをお勧めします。Nimbus H/Aを設定する場合は、すべてのマシンのFQDNをアドレス指定する必要があります。&#39;疑似分散&#39;クラスタを設定するだけの場合は、デフォルト値のままでも構いませんが、それでもFQDNを記入することをお勧めします。</p>
+
+<p>4) <strong>supervisor.slots.ports</strong>: ワーカーマシンごとに、このマシンで実行するワーカーの数を設定します。各ワーカーはメッセージを受信するために単一のポートを使用し、この設定では、使用するために開いているポートを定義します。ここに5つのポートを定義すると、Stormはこのマシン上で実行するワーカーを5つまで割り当てます。 3つのポートを定義すると、Stormは最大3つまでしか動作させません。デフォルトでは、この設定はポート6700,6701,6702および6703で4つのワーカーを実行するように設定されています:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">supervisor.slots.ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">6700</span>
+    <span class="pi">-</span> <span class="s">6701</span>
+    <span class="pi">-</span> <span class="s">6702</span>
+    <span class="pi">-</span> <span class="s">6703</span>
+</code></pre></div>
+<h3 id="monitoring-health-of-supervisors">Monitoring Health of Supervisors</h3>
+
+<p>Stormは、ノードが正常であるかどうかを判断するために、管理者が提供するスクリプトを定期的に実行するようスーパーバイザを設定できるメカニズムを提供しています。管理者は、スーパバイザにstorm.health.check.dirにあるスクリプトで任意のチェックを実行させることによって、ノードが健全な状態にあるかどうかを判断させることができます。スクリプトがノードが不健全な状態になったことを検出する際に、文字列ERRORで始まる行を標準出力に出力する必要があります。スーパーバイザは定期的にヘルスチェックディレクトリ内のスクリプトを実行し、出力をチェックします。上記のように、スクリプトの出力にERRORという文字列が含まれている場合、スーパーバイザはワーカーをシャットダウンして終了します。</p>
+
+<p>スーパバイザが&quot;/bin/storm node-health-check&quot;による監視とともに実行されている場合、スーパバイザはそのスクリプトを使って、自身を起動するか、あるいはノードが正常かを判断できます。</p>
+
+<p>ヘルスチェックディレクトリの場所は、次のように設定できます:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">storm.health.check.dir</span><span class="pi">:</span> <span class="s2">"</span><span class="s">healthchecks"</span>
+</code></pre></div>
+<p>スクリプトには実行権限が必要です。
+特定のヘルスチェックスクリプトがタイムアウトにより失敗したとマークされるまでの時間は、次のように設定できます:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">storm.health.check.timeout.ms</span><span class="pi">:</span> <span class="s">5000</span>
+</code></pre></div>
+<h3 id="configure-external-libraries-and-environmental-variables-optional">Configure external libraries and environmental variables (optional)</h3>
+
+<p>外部ライブラリやカスタムプラグインのサポートが必要な場合は、そのようなjarファイルをextlib/やextlib-daemon/ディレクトリに置くことができます。extlib-daemon/ディレクトリには、デーモン（Nimbus、Supervisor、DRPC、UI、Logviewer）だけが使用するHDFSやカスタマイズされたスケジューリングライブラリなどが格納されています。したがって、2つの環境変数STORM_EXT_CLASSPATHとSTORM_EXT_CLASSPATH_DAEMONは、外部クラスパスとデーモンのみの外部クラスパスを含むようにユーザーが構成できます。</p>
+
+<h3 id="launch-daemons-under-supervision-using-quot-storm-quot-script-and-a-supervisor-of-your-choice">Launch daemons under supervision using &quot;storm&quot; script and a supervisor of your choice</h3>
+
+<p>最後のステップは、すべてのStormデーモンを起動することです。これらのデーモンのそれぞれを監視下で実行することが重要です。Stormは予期しないエラーが発生した場合にプロセスが停止する<strong>fail-fast</strong>システムです。Stormは、任意の時点で安全に停止し、プロセスの再起動時に正しく回復できるように設計されています。これは、Stormが進行中の状態を保持していない理由です -- Nimbusまたはスーパーバイザが再起動した場合、実行中のトポロジは影響を受けません。Stormデーモンを実行する方法は次のとおりです:</p>
+
+<ol>
+<li><strong>Nimbus</strong>: マスタマシンにおいて監視のもと&quot;bin/storm nimbus&quot;コマンドを実行します。</li>
+<li><strong>Supervisor</strong>: 各ワーカーマシンにおいて監督のもと&quot;bin/storm supervisor&quot;コマンドを実行します。スーパバイザデーモンは、そのマシン上のワーカープロセスの起動と停止を行います。</li>
+<li><strong>UI</strong>: 監督のもとでコマンド&quot;bin/storm ui&quot;を実行することによって、Storm UI（クラスタとトポロジ上の診断を提供するブラウザからアクセスできるサイト）を実行します。 Uは、Webブラウザでhttp://{ui host}:8080を開くことでアクセスできます。</li>
+</ol>
+
+<p>ご覧のとおり、デーモンの実行は非常に簡単です。デーモンは、Stormリリースを解凍した場所のlogs/ディレクトリにログを記録します。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

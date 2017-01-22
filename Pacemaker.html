@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Pacemaker</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Pacemaker</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h3 id="introduction">Introduction</h3>
+
+<p>Pacemakerは、ワーカーからのハートビートを処理するように設計されたStormのデーモンです。Stormがスケールアップされると、ZooKeeperはワーカーからのハートビートがもたらす大量の書き込みによってボトルネックになります。ZooKeeperに一貫性を維持させようとすると、ディスクへの書き込みとネットワーク上のトラフィックが多くなりすぎてしまいます。</p>
+
+<p>ハートビートは一時的な性質を持つため、ディスクに永続化する必要はなく、ノード間で同期させる必要もありません。インメモリに格納させることができます。これがPacemakerの役割です。Pacemakerは、ZooKeeperのようにディレクトリスタイルのキーとバイト配列の値を持つ、単純なインメモリのキーバリューストアとして機能します。</p>
+
+<p>対応するPacemakerクライアントは、<code>ClusterState</code>インターフェースのプラグインである<code>org.apache.storm.pacemaker.pacemaker_state_factory</code>です。 ハートビートの呼び出しは<code>pacemaker_state_factory</code>によって生成された<code>ClusterState</code>によってPacemakerデーモンに流入し、その他のセット/ゲット操作はZooKeeperに転送されます。</p>
+
+<hr>
+
+<h3 id="configuration">Configuration</h3>
+
+<ul>
+<li><code>pacemaker.host</code> : Pacemakerデーモンが動作しているホスト</li>
+<li><code>pacemaker.port</code> : Pacemakerがリッスンするポート</li>
+<li><code>pacemaker.max.threads</code> : Pacemakerデーモンが要求を処理するために使用するスレッドの最大数。</li>
+<li><code>pacemaker.childopts</code> : Pacemakerが使用するべきJVMのパラメータ。（storm-deployプロジェクトで使用されます）</li>
+<li><code>pacemaker.auth.method</code> : 使用されている認証方法（詳細は後述）</li>
+</ul>
+
+<h4 id="example">Example</h4>
+
+<p>Pacemakerを起動して実行するには、すべてのノードのクラスタ設定で次のオプションを設定します:
+<code>
+storm.cluster.state.store: &quot;org.apache.storm.pacemaker.pacemaker_state_factory&quot;
+</code></p>
+
+<p>Pacemakerホストもすべてのノードに設定する必要があります:
+<code>
+pacemaker.host: somehost.mycompany.com
+</code></p>
+
+<p>そして、すべてのデーモンを起動します</p>
+
+<p>(Pacemakerも含めて):
+<code>
+$ storm pacemaker
+</code></p>
+
+<p>これで、Stormクラスタは、すべてのワーカーのハートビートををPacemakerにプッシュします。</p>
+
+<h3 id="security">Security</h3>
+
+<p>現在、ダイジェスト（パスワードベース）とKerberosセキュリティがサポートされています。セキュリティは現在、読み取りのみについてのものであり、書き込みについてのものはありません。書き込みは誰でも実行できますが、読み取りは認証・認可されたユーザーのみが実行できます。これは、将来の開発される予定のものであり、クラスタをDoS攻撃に開放してはいますが、主要な目標である機密情報が不正に参照されることを防ぎます。</p>
+
+<h4 id="digest">Digest</h4>
+
+<p>ダイジェスト認証を設定するには、NimbusとPacemakerをホストするノードのクラスタ設定で<code>pacemaker.auth.method: DIGEST</code>を設定します。
+また、下記の構造を含むJAAS設定ファイルを指すように、<code>java.security.auth.login.config</code>を設定する必要があります:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">PacemakerDigest {
+    username="some username"
+    password="some password";
+};
+</code></pre></div>
+<p>これらの設定がなされているノードは、Pacemakerから読み取ることができます。
+ワーカーノードはこれらの設定を行う必要はなく、また、<code>pacemaker.auth.method: NONE</code>としておけばPacemakerデーモンから読み取る必要がないため、そのままにしておくことができます。</p>
+
+<h4 id="kerberos">Kerberos</h4>
+
+<p>Kerberos認証を設定するには、NimbusとPacemakerをホストするノードのクラスタ設定で<code>pacemaker.auth.method: KERBEROS</code>を設定します。
+また、ノードはJAAS設定を指すように<code>java.security.auth.login.config</code>を設定する必要があります。</p>
+
+<p>NimbusのJAAS設定は、次のようになります:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">PacemakerClient {
+    com.sun.security.auth.module.Krb5LoginModule required
+    useKeyTab=true
+    keyTab="/etc/keytabs/nimbus.keytab"
+    storeKey=true
+    useTicketCache=false
+    serviceName="pacemaker"
+    principal="nimbus@MY.COMPANY.COM";
+};
+</code></pre></div>
+<p>PacemakerのJAAS設定は、次のようになります:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">PacemakerServer {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="/etc/keytabs/pacemaker.keytab"
+   storeKey=true
+   useTicketCache=false
+   principal="pacemaker@MY.COMPANY.COM";
+};
+</code></pre></div>
+<ul>
+<li>Nimbusホストの<code>PacemakerClient</code>セクションにおけるクライアントのユーザプリンシパルは、Stormクラスタの<code>nimbus.daemon.user</code>の設定値と一致しなければなりません。</li>
+<li>クライアントの<code>serviceName</code>値は、Pacemakerホストの<code>PacemakerServer</code>セクションのサーバのユーザプリンシパルと一致しなければなりません。</li>
+</ul>
+
+<h3 id="fault-tolerance">Fault Tolerance</h3>
+
+<p>Pacemakerは単一のデーモンインスタンスとして実行されるため、潜在的に単一障害点となります。</p>
+
+<p>クラッシュまたはネットワークの分断によってPacemakerがNimbusから到達不能になった場合、ワーカーは実行を継続し、Nimbusは繰り返し再接続を試みます。 Nimbusの機能は中断されますが、トポロジ自体は引き続き実行されます。
+NimbusとPacemakerが分断されたクラスタにおける同じパーティションにある場合、別のパーティションにあるワーカーはハートビートできなくなり、Nimbusはタスクを他の場所で再スケジュールします。どちらの場合であっても望ましい状態になるはずです。</p>
+
+<h3 id="zookeeper-comparison">ZooKeeper Comparison</h3>
+
+<p>PacemakerとZooKeeperを比較すると、ノード間の一貫性を保つことによるオーバーヘッドがないため、少ないCPU、少ないメモリ、ディスクは使わずに同じ負荷に対応できます。
+ギガビットのネットワーク環境では、約6000ノードという理論上の制限があります。しかし、実際の制限は2000〜3000程度のノードの可能性が高いです。これらの制限は、まだテストされていません。
+トポロジーを目一杯スケジュールした270のスーパーバイザクラスタにおいて、4つの<code>Intel(R) Xeon(R) CPU E5530 @ 2.40GHz</code>およびRAM 24GiB搭載のマシンで、Pacemakerは1コアを70％、RAMを1Gバイト近く使用していました。</p>
+
+<p>PacemakerをHAにする簡単な方法があります。ZooKeeperとは異なり、Pacemakerはオーバーヘッドなしで水平方向に拡大縮小できるはずです。対照的に、ZooKeeperでは、ZKノードを追加する際のリターンは小さくなります。</p>
+
+<p>要するに、単一のPacemakerノードはZooKeeperクラスタが受けることができる負荷の何倍も処理できるはずで、今後のHA化の取り組みによって水平スケーリングの可能性をさらに増やすことになります。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

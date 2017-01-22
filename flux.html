@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Flux</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Flux</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>Apache Stormによるストリーム計算をより少ない手間で生成し、デプロイするためのフレームワークです。</p>
+
+<h2 id="definition">Definition</h2>
+
+<p><strong>flux</strong> |fləks| <em>noun</em></p>
+
+<ol>
+<li>The action or process of flowing or flowing out</li>
+<li>Continuous change</li>
+<li>In physics, the rate of flow of a fluid, radiant energy, or particles across a given area</li>
+<li>A substance mixed with a solid to lower its melting point</li>
+</ol>
+
+<h2 id="rationale">Rationale</h2>
+
+<p>構成がハードコードされていると、悪いことが起こります。
+構成を変更するためにアプリケーションを再コンパイルまたは再パッケージする必要はありません。</p>
+
+<h2 id="about">About</h2>
+
+<p>Fluxは、Apache Stormトポロジーの定義とデプロイメントを苦労なく行える、デベロッパー志向なフレームワークと一連のユーティリティーです。</p>
+
+<p>あなたは何回このパターンを繰り返すことしてきましたか？:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="c1">// logic to determine if we're running locally or not...</span>
+    <span class="c1">// create necessary config options...</span>
+    <span class="kt">boolean</span> <span class="n">runLocal</span> <span class="o">=</span> <span class="n">shouldRunLocal</span><span class="o">();</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">runLocal</span><span class="o">){</span>
+        <span class="n">LocalCluster</span> <span class="n">cluster</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LocalCluster</span><span class="o">();</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">conf</span><span class="o">,</span> <span class="n">topology</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">StormSubmitter</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">conf</span><span class="o">,</span> <span class="n">topology</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>こんな感じの方が簡単ではないでしょうか:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">storm jar mytopology.jar org.apache.storm.flux.Flux --local config.yaml
+</code></pre></div>
+<p>とか:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">storm jar mytopology.jar org.apache.storm.flux.Flux --remote config.yaml
+</code></pre></div>
+<p>また、トポロジのグラフを結線するのにJavaコードを使用するため、変更にはトポロジーjarファイルの再コンパイルと再パッケージングが必要であるという点もペインポイントとして取りざたされます。Fluxは、すべてのStormコンポーネントを単一のjarファイルにパッケージ化し、外部テキストファイルを使用してトポロジのレイアウトと設定を定義することで、その苦痛を軽減することを目指しています。</p>
+
+<h2 id="features">Features</h2>
+
+<ul>
+<li>トポロジのコードに設定を埋め込むことなく、Stormトポロジ(StormコアとMicrobatch APIの両方)を簡単に設定およびデプロイできます。</li>
+<li> 既存のトポロジコードのサポート(下記参照)</li>
+<li>Storm Core API(Spouts/Bolts)を柔軟なYAML DSLを使用して定義する</li>
+<li>ほとんどのStormコンポーネント(storm-kafka, storm-hdfs, storm-hbaseなど)のYAML DSLサポート</li>
+<li>Multi-langコンポーネントのための便利なサポート</li>
+<li>設定/環境を簡単に切り替えるための外部プロパティの置換/フィルタリング(Mavenの`${variable.name}を置換するスタイルに似ています)</li>
+</ul>
+
+<h2 id="usage">Usage</h2>
+
+<p>Fluxを使用するには、それを依存関係として追加し、すべてのStormコンポーネントをfat jarにパッケージングし、次にYAMLドキュメントを作成してトポロジを定義します(YAML設定オプションは以下を参照)。</p>
+
+<h3 id="building-from-source">Building from Source</h3>
+
+<p>Fluxを使用する最も簡単な方法は、後述のようにプロジェクトにMaven依存関係を追加することです。</p>
+
+<p>ソースからFluxをビルドし、ユニット/統合テストを実行する場合は、システムに次のものがインストールされている必要があります:</p>
+
+<ul>
+<li>Python 2.6.x またはそれ以降</li>
+<li>Node.js 0.10.x またはそれ以降</li>
+</ul>
+
+<h4 id="building-with-unit-tests-enabled">Building with unit tests enabled:</h4>
+<div class="highlight"><pre><code class="language-" data-lang="">mvn clean install
+</code></pre></div>
+<h4 id="building-with-unit-tests-disabled">Building with unit tests disabled:</h4>
+
+<p>PythonやNode.jsをインストールせずにFluxを構築したい場合は、ユニットテストをスキップするだけです:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">mvn clean install -DskipTests=true
+</code></pre></div>
+<p>Fluxを使用してリモートクラスタにトポロジをデプロイする場合は、Apache Stormが必要とするため、Pythonをインストールする必要があります。</p>
+
+<h4 id="building-with-integration-tests-enabled">Building with integration tests enabled:</h4>
+<div class="highlight"><pre><code class="language-" data-lang="">mvn clean install -DskipIntegration=false
+</code></pre></div>
+<h3 id="packaging-with-maven">Packaging with Maven</h3>
+
+<p>あなたのStormコンポーネントでFluxを有効にするには、それをStormトポロジのjarに含まれるように依存関係として追加する必要があります。これは、Maven shade plugin（推奨）またMaven assembly plugin（推奨しません）を使用して実行できます。</p>
+
+<h4 id="flux-maven-dependency">Flux Maven Dependency</h4>
+
+<p>Fluxの現在のバージョンは、Maven Centralで次の指定により使用できます:</p>
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.apache.storm<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>flux-core<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${storm.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div>
+<h4 id="creating-a-flux-enabled-topology-jar">Creating a Flux-Enabled Topology JAR</h4>
+
+<p>以下の例は、Maven shadeプラグインを使用したFluxの使用法を示しています:</p>
+<div class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="c">&lt;!-- include Flux and user dependencies in the shaded jar --&gt;</span>
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="c">&lt;!-- Flux include --&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.storm<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>flux-core<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${storm.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+
+    <span class="c">&lt;!-- add user dependencies here... --&gt;</span>
+
+<span class="nt">&lt;/dependencies&gt;</span>
+<span class="c">&lt;!-- create a fat jar that includes all dependencies --&gt;</span>
+<span class="nt">&lt;build&gt;</span>
+    <span class="nt">&lt;plugins&gt;</span>
+        <span class="nt">&lt;plugin&gt;</span>
+            <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>maven-shade-plugin<span class="nt">&lt;/artifactId&gt;</span>
+            <span class="nt">&lt;version&gt;</span>1.4<span class="nt">&lt;/version&gt;</span>
+            <span class="nt">&lt;configuration&gt;</span>
+                <span class="nt">&lt;createDependencyReducedPom&gt;</span>true<span class="nt">&lt;/createDependencyReducedPom&gt;</span>
+            <span class="nt">&lt;/configuration&gt;</span>
+            <span class="nt">&lt;executions&gt;</span>
+                <span class="nt">&lt;execution&gt;</span>
+                    <span class="nt">&lt;phase&gt;</span>package<span class="nt">&lt;/phase&gt;</span>
+                    <span class="nt">&lt;goals&gt;</span>
+                        <span class="nt">&lt;goal&gt;</span>shade<span class="nt">&lt;/goal&gt;</span>
+                    <span class="nt">&lt;/goals&gt;</span>
+                    <span class="nt">&lt;configuration&gt;</span>
+                        <span class="nt">&lt;transformers&gt;</span>
+                            <span class="nt">&lt;transformer</span>
+                                    <span class="na">implementation=</span><span class="s">"org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"</span><span class="nt">/&gt;</span>
+                            <span class="nt">&lt;transformer</span>
+                                    <span class="na">implementation=</span><span class="s">"org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"</span><span class="nt">&gt;</span>
+                                <span class="nt">&lt;mainClass&gt;</span>org.apache.storm.flux.Flux<span class="nt">&lt;/mainClass&gt;</span>
+                            <span class="nt">&lt;/transformer&gt;</span>
+                        <span class="nt">&lt;/transformers&gt;</span>
+                    <span class="nt">&lt;/configuration&gt;</span>
+                <span class="nt">&lt;/execution&gt;</span>
+            <span class="nt">&lt;/executions&gt;</span>
+        <span class="nt">&lt;/plugin&gt;</span>
+    <span class="nt">&lt;/plugins&gt;</span>
+<span class="nt">&lt;/build&gt;</span>
+</code></pre></div>
+<h3 id="deploying-and-running-a-flux-topology">Deploying and Running a Flux Topology</h3>
+
+<p>トポロジのコンポーネントがFluxの依存関係とともいパッケージ化されたら、<code>storm jar</code>コマンドを使用してローカルまたはリモートの異なるトポロジを実行できます。たとえば、fat jarの名前が <code>myTopology-0.1.0-SNAPSHOT.jar</code>である場合、以下のコマンドを使用してローカルで実行できます:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">storm jar myTopology-0.1.0-SNAPSHOT.jar org.apache.storm.flux.Flux --local my_config.yaml
+</code></pre></div>
+<h3 id="command-line-options">Command line options</h3>
+<div class="highlight"><pre><code class="language-" data-lang="">usage: storm jar &lt;my_topology_uber_jar.jar&gt; org.apache.storm.flux.Flux
+             [options] &lt;topology-config.yaml&gt;
+ -d,--dry-run                 トポロジを実行またはデプロイしません。トポロジに関する情報を構築、検証、表示するだけです。
+ -e,--env-filter              環境変数の置換を実行します。`${ENV-[NAME]}`で指定された置換キーは、対応する`NAME`の環境変数に置き換えられます
+ -f,--filter &lt;file&gt;           プロパティ置換を実行します。指定されたファイルをプロパティのソースとして使用し、
+                              $[property name]}で識別されるキーをプロパティファイルで定義された値に置き換えます。
+ -i,--inactive                トポロジをデプロイしますが、有効化しません。
+ -l,--local                   ローカルモードでトポロジを実行します。
+ -n,--no-splash               スプラッシュ画面の表示を抑止します。
+ -q,--no-detail               トポロジの詳細の表示を抑止します。
+ -r,--remote                  トポロジをリモートのクラスタにデプロイします。
+ -R,--resource                指定されたパスを、ファイルではなくクラスパスリソースとして扱います。
+ -s,--sleep &lt;ms&gt;              ローカルで実行しているときに、トポロジを強制終了してローカルクラスタをシャットダウンするまでのスリープ時間(ms)。
+ -z,--zookeeper &lt;host:port&gt;   ローカルモードで実行する際に、インプロセスZooKeeperの代わりに、
+                              指定した&lt;host&gt;:&lt;port&gt;のZooKeeperを使用します。(Stormの0.9.3以降が必要です)
+</code></pre></div>
+<p><strong>注意:</strong> Fluxは<code>storm</code>コマンドのコマンドラインスイッチの衝突を回避しようとしており、他のコマンドラインスイッチを<code>storm</code>コマンドに渡すことができます。</p>
+
+<p>たとえば、<code>storm</code>コマンドスイッチ<code>-c</code>を使用して、トポロジの設定プロパティを上書きすることができます。
+次のコマンド例はFluxを実行し、<code>nimbus.seeds</code>設定を上書きします:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">storm jar myTopology-0.1.0-SNAPSHOT.jar org.apache.storm.flux.Flux --remote my_config.yaml -c <span class="s1">'nimbus.seeds=["localhost"]'</span>
+</code></pre></div>
+<h3 id="sample-output">Sample output</h3>
+<div class="highlight"><pre><code class="language-" data-lang="">███████╗██╗     ██╗   ██╗██╗  ██╗
+██╔════╝██║     ██║   ██║╚██╗██╔╝
+█████╗  ██║     ██║   ██║ ╚███╔╝
+██╔══╝  ██║     ██║   ██║ ██╔██╗
+██║     ███████╗╚██████╔╝██╔╝ ██╗
+╚═╝     ╚══════╝ ╚═════╝ ╚═╝  ╚═╝
++-         Apache Storm        -+
++-  data FLow User eXperience  -+
+Version: 0.3.0
+Parsing file: /Users/hsimpson/Projects/donut_domination/storm/shell_test.yaml
+---------- TOPOLOGY DETAILS ----------
+Name: shell-topology
+--------------- SPOUTS ---------------
+sentence-spout[1](org.apache.storm.flux.spouts.GenericShellSpout)
+---------------- BOLTS ---------------
+splitsentence[1](org.apache.storm.flux.bolts.GenericShellBolt)
+log[1](org.apache.storm.flux.wrappers.bolts.LogInfoBolt)
+count[1](org.apache.storm.testing.TestWordCounter)
+--------------- STREAMS ---------------
+sentence-spout --SHUFFLE--&gt; splitsentence
+splitsentence --FIELDS--&gt; count
+count --SHUFFLE--&gt; log
+--------------------------------------
+Submitting topology: 'shell-topology' to remote cluster...
+</code></pre></div>
+<h2 id="yaml-configuration">YAML Configuration</h2>
+
+<p>Fluxのトポロジは、トポロジを記述するYAMLファイルで定義されます。
+Fluxのトポロジの定義は、次のもので構成されます:</p>
+
+<ol>
+<li>トポロジ名</li>
+<li>トポロジの&quot;コンポーネント&quot;のリスト(環境内で使用可能になる名前付けられたJavaオブジェクト)</li>
+<li><strong>いずれかの</strong> (DSLによるトポロジ定義):
+
+<ul>
+<li>Spoutのリストで、それぞれが一意のIDで識別されているもの</li>
+<li>Boltのリストで、それぞれが一意のIDで識別されているもの</li>
+<li>SpoutとBoltの間のタプルの流れを表す&quot;ストリーム&quot;オブジェクトのリスト</li>
+</ul></li>
+<li><strong>オプショナルな</strong> (<code>org.apache.storm.generated.StormTopology</code>のインスタンスを生成できるJVMクラス
+
+<ul>
+<li><code>topologySource</code>の定義</li>
+</ul></li>
+</ol>
+
+<p>例として、YAML DSLを使用したワードカウントをおこなうトポロジの簡単な定義を次に示します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">yaml-topology"</span>
+<span class="s">config</span><span class="pi">:</span>
+  <span class="s">topology.workers</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="c1"># spout definitions</span>
+<span class="s">spouts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">spout-1"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.testing.TestWordSpout"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="c1"># bolt definitions</span>
+<span class="s">bolts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-1"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.testing.TestWordCounter"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-2"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.wrappers.bolts.LogInfoBolt"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="c1">#stream definitions</span>
+<span class="s">streams</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">spout-1</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">bolt-1"</span> <span class="c1"># name isn't used (placeholder for logging, UI, etc.)</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">spout-1"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-1"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">FIELDS</span>
+      <span class="s">args</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">word"</span><span class="pi">]</span>
+
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-1</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">bolt2"</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-1"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-2"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">SHUFFLE</span>
+
+
+</code></pre></div>
+<h2 id="property-substitution-filtering">Property Substitution/Filtering</h2>
+
+<p>開発において、開発者は開発環境と本番環境の間での展開の切り替えなど、設定を簡単に切り替えたくなることが普通です。
+これは、別のYAML設定ファイルを使用することで実現できますが、その方法だと、特にStormトポロジが変更されず、ホスト名、ポート、およびparallelismについてのパラメータなどの設定を変更する場合に、不要な重複が発生します。</p>
+
+<p>この場合、Fluxは<code>.properties</code>ファイルに値を2つの外部化し、<code>.yaml</code>ファイルがパースされる前にそれらを置換するためのプロパティフィルタリングを提供します。</p>
+
+<p>プロパティフィルタリングを有効にするには、<code>--filter</code>コマンドラインオプションを使用し、<code>.properties</code>ファイルを指定します。たとえば、次のようにfluxを呼び出したとします:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">storm jar myTopology-0.1.0-SNAPSHOT.jar org.apache.storm.flux.Flux --local my_config.yaml --filter dev.properties
+</code></pre></div>
+<p>以下の<code>dev.properties</code>ファイルをがあるとして:</p>
+<div class="highlight"><pre><code class="language-properties" data-lang="properties"><span class="py">kafka.zookeeper.hosts</span><span class="p">:</span> <span class="s">localhost:2181</span>
+</code></pre></div>
+<p><code>${}</code>構文を使うと、<code>.yaml</code>ファイルのキーからこれらのプロパティを参照することができます：</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml">  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">zkHosts"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.ZkHosts"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">${kafka.zookeeper.hosts}"</span>
+</code></pre></div>
+<p>この場合、FluxはYAMLの内容をパースする前に<code>${kafka.zookeeper.hosts}</code>を<code>localhost:2181</code>に置き換えます。</p>
+
+<h3 id="environment-variable-substitution-filtering">Environment Variable Substitution/Filtering</h3>
+
+<p>Fluxでは、環境変数の置換も可能です。
+たとえば、<code>ZK_HOSTS</code>という名前の環境変数が定義されている場合、FluxのYAMLファイルでは次の構文で参照することができます:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">${ENV-ZK_HOSTS}
+</code></pre></div>
+<h2 id="components">Components</h2>
+
+<p>コンポーネントは基本的に名前付けられたオブジェクトインスタンスで、SpoutとBoltの構成におけるオプションとして使用できます。 
+あなたがSpringフレームワークに精通しているなら、コンポーネントはSpring Beanとほぼ類似していることがわかるでしょう。</p>
+
+<p>すべてのコンポーネントは、最小では、一意の識別子(String)とクラス名(String)によって識別されます。
+たとえば、以下の例では<code>org.apache.storm.kafka.StringScheme</code>クラスのインスタンスをキー<code>&quot;stringScheme&quot;</code>で参照として利用できます。
+これは、<code>org.apache.storm.kafka.StringScheme</code>がデフォルトコンストラクタを持っていることを前提としています。</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">components</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringScheme"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.StringScheme"</span>
+</code></pre></div>
+<h3 id="contructor-arguments-references-properties-and-configuration-methods">Contructor Arguments, References, Properties and Configuration Methods</h3>
+
+<h4 id="constructor-arguments">Constructor Arguments</h4>
+
+<p>クラスのコンストラクタへの引数は、コンポーネントに<code>contructorArgs</code>要素を追加することで設定できます。
+<code>constructorArgs</code>は、クラスのコンストラクタに渡されるオブジェクトのリストです。次の例では、単一の文字列を引数として取るコンストラクタを呼び出してオブジェクトを作成します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml">  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">zkHosts"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.ZkHosts"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">localhost:2181"</span>
+</code></pre></div>
+<h4 id="references">References</h4>
+
+<p>各コンポーネントのインスタンスは、他のコンポーネントによって使用/再利用されることを可能にする一意のIDによって識別されます。
+既存のコンポーネントを参照するには、<code>ref</code>タグを使ってコンポーネントのidを指定します。</p>
+
+<p>次の例では、id<code>&quot;stringScheme&quot;</code>を持つコンポーネントが生成され、
+後で別のコンポーネントのコンストラクタへの引数として参照できまます:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">components</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringScheme"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.StringScheme"</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringMultiScheme"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.spout.SchemeAsMultiScheme"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">ref</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringScheme"</span> <span class="c1"># component with id "stringScheme" must be declared above.</span>
+</code></pre></div>
+<p><strong>N.B.:</strong> 参照は、それらが指し示すオブジェクトが宣言された後(下)でしか使用できません。</p>
+
+<h4 id="properties">Properties</h4>
+
+<p>異なる引数を持つコンストラクタを呼び出すことに加えて、
+Fluxでは、<code>public</code>として宣言されたJavaBean風のsetterメソッドとフィールドを使用してコンポーネントを構成することもできます:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml">  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">spoutConfig"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.SpoutConfig"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="c1"># brokerHosts</span>
+      <span class="pi">-</span> <span class="s">ref</span><span class="pi">:</span> <span class="s2">"</span><span class="s">zkHosts"</span>
+      <span class="c1"># topic</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">myKafkaTopic"</span>
+      <span class="c1"># zkRoot</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">/kafkaSpout"</span>
+      <span class="c1"># id</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">myId"</span>
+    <span class="s">properties</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">ignoreZkOffsets"</span>
+        <span class="s">value</span><span class="pi">:</span> <span class="s">true</span>
+      <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">scheme"</span>
+        <span class="s">ref</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringMultiScheme"</span>
+</code></pre></div>
+<p>上記の例では、<code>properties</code>宣言により、Fluxはシグネチャ<code>setForceFromStart(boolean b)</code>を持つ<code>SpoutConfig</code>内のパブリックメソッドを探し、それを呼び出そうとします。setterメソッドが見つからない場合、Fluxは<code>ignoreZkOffsets</code>という名前のパブリックインスタンス変数を探し、その値を設定しようとします。</p>
+
+<p>参照はプロパティ値として使用することもできます。</p>
+
+<h4 id="configuration-methods">Configuration Methods</h4>
+
+<p>概念的には、Configuration MethodはPropertiesやConstructor引数に似ています -- オブジェクトの作成後に任意のメソッドを呼び出すことができます。
+Configuration Methodsは、JavaBeanメソッドを公開しないクラスや、オブジェクトを完全に構成できるコンストラクタを持つクラスを操作する場合に便利です。
+一般的な例だと、設定/合成にBuilderパターンを使用するクラスが含まれます。</p>
+
+<p>次のYAMLの例は、Boltを生成し、いくつかのメソッドを呼び出すことによってそれを設定します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">bolts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-1"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.test.TestBolt"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+    <span class="s">configMethods</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">withFoo"</span>
+        <span class="s">args</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="s2">"</span><span class="s">foo"</span>
+      <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">withBar"</span>
+        <span class="s">args</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="s2">"</span><span class="s">bar"</span>
+      <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">withFooBar"</span>
+        <span class="s">args</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="s2">"</span><span class="s">foo"</span>
+          <span class="pi">-</span> <span class="s2">"</span><span class="s">bar"</span>
+</code></pre></div>
+<p>対応するメソッドのシグネチャは次のとおりです:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">withFoo</span><span class="o">(</span><span class="n">String</span> <span class="n">foo</span><span class="o">);</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">withBar</span><span class="o">(</span><span class="n">String</span> <span class="n">bar</span><span class="o">);</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">withFooBar</span><span class="o">(</span><span class="n">String</span> <span class="n">foo</span><span class="o">,</span> <span class="n">String</span> <span class="n">bar</span><span class="o">);</span>
+</code></pre></div>
+<p>Configuration Methodに渡される引数は、コンストラクタ引数と同じように動作し、Referenceもサポートします。</p>
+
+<h3 id="using-java-enums-in-contructor-arguments-references-properties-and-configuration-methods">Using Java <code>enum</code>s in Contructor Arguments, References, Properties and Configuration Methods</h3>
+
+<p>単に <code>enum</code>の名前を参照するだけで、Flux YAMLファイルの引数としてJavaの<code>enum</code>値を簡単に使うことができます。</p>
+
+<p>たとえば、<a href="">Storm&#39;s HDFS module</a>には、以下の <code>enum</code>定義が含まれています（簡略さために単純化されています）。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kd">enum</span> <span class="n">Units</span> <span class="o">{</span>
+    <span class="n">KB</span><span class="o">,</span> <span class="n">MB</span><span class="o">,</span> <span class="n">GB</span><span class="o">,</span> <span class="n">TB</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>そして、<code>org.apache.storm.hdfs.bolt.rotation.FileSizeRotationPolicy</code>クラスは次のコンストラクタを持っています:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="nf">FileSizeRotationPolicy</span><span class="o">(</span><span class="kt">float</span> <span class="n">count</span><span class="o">,</span> <span class="n">Units</span> <span class="n">units</span><span class="o">)</span>
+
+</code></pre></div>
+<p>次のFlux<code>component</code>定義を使用してコンストラクタを呼び出すことができます:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml">  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">rotationPolicy"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.hdfs.bolt.rotation.FileSizeRotationPolicy"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">5.0</span>
+      <span class="pi">-</span> <span class="s">MB</span>
+</code></pre></div>
+<p>上記の定義は、次のJavaコードと機能的に同等です:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="c1">// rotate files when they reach 5MB</span>
+<span class="n">FileRotationPolicy</span> <span class="n">rotationPolicy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileSizeRotationPolicy</span><span class="o">(</span><span class="mf">5.0f</span><span class="o">,</span> <span class="n">Units</span><span class="o">.</span><span class="na">MB</span><span class="o">);</span>
+</code></pre></div>
+<h2 id="topology-config">Topology Config</h2>
+
+<p><code>config</code>セクションは<code>org.apache.storm.Config</code>クラスのインスタンスとして<code>org.apache.storm.StormSubmitter</code>に渡されるStormトポロジ設定パラメータの対応付けです:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">config</span><span class="pi">:</span>
+  <span class="s">topology.workers</span><span class="pi">:</span> <span class="s">4</span>
+  <span class="s">topology.max.spout.pending</span><span class="pi">:</span> <span class="s">1000</span>
+  <span class="s">topology.message.timeout.secs</span><span class="pi">:</span> <span class="s">30</span>
+</code></pre></div>
+<h1 id="existing-topologies">Existing Topologies</h1>
+
+<p>既存のStormトポロジーを使用している場合でも、Fluxを使用してデプロイ/実行/テストすることができます。
+この機能を使用すると、既存のトポロジクラスについてFluxのコンストラクタの引数、参照、プロパティ、およびトポロジのコンフィグレーションの宣言を利用できます。</p>
+
+<p>既存のトポロジクラスを使用する最も簡単な方法は、次のシグネチャのいずれかを使って<code>getTopology()</code>インスタンスメソッドを定義することです:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="n">StormTopology</span> <span class="nf">getTopology</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Object</span><span class="o">&gt;</span> <span class="n">config</span><span class="o">)</span>
+</code></pre></div>
+<p>あるいは:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="n">StormTopology</span> <span class="nf">getTopology</span><span class="o">(</span><span class="n">Config</span> <span class="n">config</span><span class="o">)</span>
+</code></pre></div>
+<p>次に、以下のYAMLを使用してトポロジを構成できます:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">existing-topology"</span>
+<span class="s">topologySource</span><span class="pi">:</span>
+  <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.test.SimpleTopology"</span>
+</code></pre></div>
+<p>トポロジのソースとして使用したいクラスが異なるメソッド名(例えば<code>getTopology</code>ないもの)である場合は、それを上書きすることができます:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">existing-topology"</span>
+<span class="s">topologySource</span><span class="pi">:</span>
+  <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.test.SimpleTopology"</span>
+  <span class="s">methodName</span><span class="pi">:</span> <span class="s2">"</span><span class="s">getTopologyWithDifferentMethodName"</span>
+</code></pre></div>
+<p><strong>N.B.:</strong> 指定されたメソッドは<code>java.util.Map &lt;String、Object&gt;</code>または <code>org.apache.storm.Config</code>型の単一の引数を受け入れ、
+<code>org.apache.storm.generated.StormTopology</code>オブジェクトを返す必要があります。</p>
+
+<h1 id="yaml-dsl">YAML DSL</h1>
+
+<h2 id="spouts-and-bolts">Spouts and Bolts</h2>
+
+<p>SpoutとBoltは、YAML設定のそれぞれのセクションで設定されます。
+SpoutとBoltの定義は、トポロジのデプロイ時にコンポーネントの並列性を設定する<code>parallelism</code>パラメータを追加する<code>component</code>定義の拡張です。</p>
+
+<p>SpoutとBoltの定義は<code>component</code>を拡張するので、コンストラクタ引数、参照、プロパティもサポートされます。</p>
+
+<p>シェルSpoutの例:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">spouts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">sentence-spout"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.spouts.GenericShellSpout"</span>
+    <span class="c1"># shell spout constructor takes 2 arguments: String[], String[]</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="c1"># command line</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">node"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">randomsentence.js"</span><span class="pi">]</span>
+      <span class="c1"># output fields</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">word"</span><span class="pi">]</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+</code></pre></div>
+<p>Kafka Spoutの例:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">components</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringScheme"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.StringScheme"</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringMultiScheme"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.spout.SchemeAsMultiScheme"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">ref</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringScheme"</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">zkHosts"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.ZkHosts"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">localhost:2181"</span>
+
+<span class="c1"># Alternative kafka config</span>
+<span class="c1">#  - id: "kafkaConfig"</span>
+<span class="c1">#    className: "org.apache.storm.kafka.KafkaConfig"</span>
+<span class="c1">#    constructorArgs:</span>
+<span class="c1">#      # brokerHosts</span>
+<span class="c1">#      - ref: "zkHosts"</span>
+<span class="c1">#      # topic</span>
+<span class="c1">#      - "myKafkaTopic"</span>
+<span class="c1">#      # clientId (optional)</span>
+<span class="c1">#      - "myKafkaClientId"</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">spoutConfig"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.SpoutConfig"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="c1"># brokerHosts</span>
+      <span class="pi">-</span> <span class="s">ref</span><span class="pi">:</span> <span class="s2">"</span><span class="s">zkHosts"</span>
+      <span class="c1"># topic</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">myKafkaTopic"</span>
+      <span class="c1"># zkRoot</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">/kafkaSpout"</span>
+      <span class="c1"># id</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">myId"</span>
+    <span class="s">properties</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">ignoreZkOffsets"</span>
+        <span class="s">value</span><span class="pi">:</span> <span class="s">true</span>
+      <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">scheme"</span>
+        <span class="s">ref</span><span class="pi">:</span> <span class="s2">"</span><span class="s">stringMultiScheme"</span>
+
+<span class="s">config</span><span class="pi">:</span>
+  <span class="s">topology.workers</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="c1"># spout definitions</span>
+<span class="s">spouts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">kafka-spout"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.kafka.KafkaSpout"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">ref</span><span class="pi">:</span> <span class="s2">"</span><span class="s">spoutConfig"</span>
+
+</code></pre></div>
+<p>Boltの例:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="c1"># bolt definitions</span>
+<span class="s">bolts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">splitsentence"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.bolts.GenericShellBolt"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="c1"># command line</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">python"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">splitsentence.py"</span><span class="pi">]</span>
+      <span class="c1"># output fields</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">word"</span><span class="pi">]</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+    <span class="c1"># ...</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">log"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.wrappers.bolts.LogInfoBolt"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+    <span class="c1"># ...</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.testing.TestWordCounter"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+    <span class="c1"># ...</span>
+</code></pre></div>
+<h2 id="streams-and-stream-groupings">Streams and Stream Groupings</h2>
+
+<p>Fluxのストリームは、関連付けられたグループ化定義とともに、トポロジ内のSpoutとBoltの間の接続（グラフのエッジ、データフローなど）のリストとして表されます。</p>
+
+<p>ストリームの定義には、次のプロパティがあります:</p>
+
+<p><strong><code>name</code>:</strong> 接続の名前（オプション、現在は未使用）</p>
+
+<p><strong><code>from</code>:</strong> ソース（パブリッシャ）であるSpoutまたはBoltの<code>id</code></p>
+
+<p><strong><code>to</code>:</strong> 行き先（サブスクライバ）であるSpoutまたはBoltの<code>id</code></p>
+
+<p><strong><code>grouping</code>:</strong> ストリームのストリームグループ化定義</p>
+
+<p>グループ化定義には、次のプロパティがあります。:</p>
+
+<p><strong><code>type</code>:</strong> グループ化のタイプ。<code>ALL</code>,<code>CUSTOM</code>,<code>DIRECT</code>,<code>SHUFFLE</code>,<code>LOCAL_OR_SHUFFLE</code>,<code>FIELDS</code>,<code>GLOBAL</code>,または<code>NONE</code>のいずれか。</p>
+
+<p><strong><code>streamId</code>:</strong> StormのストリームID(省略可能。未指定の場合、デフォルトのストリームを使用します)</p>
+
+<p><strong><code>args</code>:</strong> <code>FIELDS</code>グループの場合、フィールド名のリスト。</p>
+
+<p><strong><code>customClass</code></strong> <code>CUSTOM</code>グルーピングの場合、カスタムグルーピングクラスインスタンスの定義</p>
+
+<p>以下の<code>streams</code>定義の例は、以下のような結線でトポロジーを設定します:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">    kafka-spout --&gt; splitsentence --&gt; count --&gt; log
+</code></pre></div><div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="c1">#stream definitions</span>
+<span class="c1"># stream definitions define connections between spouts and bolts.</span>
+<span class="c1"># note that such connections can be cyclical</span>
+<span class="c1"># custom stream groupings are also supported</span>
+
+<span class="s">streams</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">kafka</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">split"</span> <span class="c1"># name isn't used (placeholder for logging, UI, etc.)</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">kafka-spout"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">splitsentence"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">SHUFFLE</span>
+
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">split</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">count"</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">splitsentence"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">FIELDS</span>
+      <span class="s">args</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">word"</span><span class="pi">]</span>
+
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">log"</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">log"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">SHUFFLE</span>
+</code></pre></div>
+<h3 id="custom-stream-groupings">Custom Stream Groupings</h3>
+
+<p>カスタムストリームグループを定義するには、グループ化タイプを<code>CUSTOM</code>に設定し、カスタムクラスをインスタンス化する方法をFluxに指示する<code>customClass</code>パラメータを定義します。
+<code>customClass</code>定義は<code>component</code>を拡張するので、コンストラクタの引数、参照、プロパティもサポートします。</p>
+
+<p>次の例は、<code>org.apache.storm.testing.NGrouping</code>カスタムストリームグループ化クラスのインスタンスを持つStreamを作成します。</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml">  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-1</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">bolt2"</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-1"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">bolt-2"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">CUSTOM</span>
+      <span class="s">customClass</span><span class="pi">:</span>
+        <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.testing.NGrouping"</span>
+        <span class="s">constructorArgs</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="s">1</span>
+</code></pre></div>
+<h2 id="includes-and-overrides">Includes and Overrides</h2>
+
+<p>Fluxでは、他のYAMLファイルの内容を含めることができ、同じファイルに定義されているかのように扱うことができます。
+Includeは、ファイルまたはクラスパスリソースのいずれかです。</p>
+
+<p>Includeはマップのリストとして指定されます：</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">includes</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">resource</span><span class="pi">:</span> <span class="s">false</span>
+    <span class="s">file</span><span class="pi">:</span> <span class="s2">"</span><span class="s">src/test/resources/configs/shell_test.yaml"</span>
+    <span class="s">override</span><span class="pi">:</span> <span class="s">false</span>
+</code></pre></div>
+<p><code>resource</code>プロパティが<code>true</code>に設定されている場合、Includeはクラスパスリソースとして<code>file</code>属性の値からロードされます。
+そうでない場合、それは通常のファイルとして扱われます。</p>
+
+<p><code>override</code>プロパティは、現在のファイルに定義されている値をインクルードする方法を制御します。
+<code>override</code>が<code>true</code>に設定されている場合、Includeされたファイルの値は、解析中の現在のファイルの値を置き換えます。
+<code>override</code>が<code>false</code>に設定されていると、解析中の現在のファイルの値が優先され、パーサはそれらを置き換えることをしません。</p>
+
+<p><strong>N.B.:</strong> Includeは今のところ再帰的ではありません。IncludeされているファイルからのIncludeは無視されます。</p>
+
+<h2 id="basic-word-count-example">Basic Word Count Example</h2>
+
+<p>この例では、JavaScriptで実装されたSpout、Pythonで実装されたボルト、Javaで実装されたボルトを使用しています</p>
+
+<p>トポロジのYAMLによる設定:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="nn">---</span>
+<span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">shell-topology"</span>
+<span class="s">config</span><span class="pi">:</span>
+  <span class="s">topology.workers</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="c1"># spout definitions</span>
+<span class="s">spouts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">sentence-spout"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.spouts.GenericShellSpout"</span>
+    <span class="c1"># shell spout constructor takes 2 arguments: String[], String[]</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="c1"># command line</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">node"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">randomsentence.js"</span><span class="pi">]</span>
+      <span class="c1"># output fields</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">word"</span><span class="pi">]</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="c1"># bolt definitions</span>
+<span class="s">bolts</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">splitsentence"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.bolts.GenericShellBolt"</span>
+    <span class="s">constructorArgs</span><span class="pi">:</span>
+      <span class="c1"># command line</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">python"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">splitsentence.py"</span><span class="pi">]</span>
+      <span class="c1"># output fields</span>
+      <span class="pi">-</span> <span class="pi">[</span><span class="s2">"</span><span class="s">word"</span><span class="pi">]</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">log"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.wrappers.bolts.LogInfoBolt"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+
+  <span class="pi">-</span> <span class="s">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count"</span>
+    <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.testing.TestWordCounter"</span>
+    <span class="s">parallelism</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="c1">#stream definitions</span>
+<span class="c1"># stream definitions define connections between spouts and bolts.</span>
+<span class="c1"># note that such connections can be cyclical</span>
+<span class="c1"># custom stream groupings are also supported</span>
+
+<span class="s">streams</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">spout</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">split"</span> <span class="c1"># name isn't used (placeholder for logging, UI, etc.)</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">sentence-spout"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">splitsentence"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">SHUFFLE</span>
+
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">split</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">count"</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">splitsentence"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">FIELDS</span>
+      <span class="s">args</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">word"</span><span class="pi">]</span>
+
+  <span class="pi">-</span> <span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count</span><span class="nv"> </span><span class="s">--&gt;</span><span class="nv"> </span><span class="s">log"</span>
+    <span class="s">from</span><span class="pi">:</span> <span class="s2">"</span><span class="s">count"</span>
+    <span class="s">to</span><span class="pi">:</span> <span class="s2">"</span><span class="s">log"</span>
+    <span class="s">grouping</span><span class="pi">:</span>
+      <span class="s">type</span><span class="pi">:</span> <span class="s">SHUFFLE</span>
+</code></pre></div>
+<h2 id="micro-batching-trident-api-support">Micro-Batching (Trident) API Support</h2>
+
+<p>現在、Flux YAML DSLはCore Storm APIのみをサポートしていますが、Stormのマイクロバッチ処理APIのサポートが計画されています。</p>
+
+<p>FluentをTridentトポロジで使用するには、トポロジにgetterメソッドを定義し、YAMLコンフィグレーションでそれを参照します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">my-trident-topology"</span>
+
+<span class="s">config</span><span class="pi">:</span>
+  <span class="s">topology.workers</span><span class="pi">:</span> <span class="s">1</span>
+
+<span class="s">topologySource</span><span class="pi">:</span>
+  <span class="s">className</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.flux.test.TridentTopologySource"</span>
+  <span class="c1"># Flux will look for "getTopology", this will override that.</span>
+  <span class="s">methodName</span><span class="pi">:</span> <span class="s2">"</span><span class="s">getTopologyWithDifferentMethodName"</span>
+</code></pre></div>
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

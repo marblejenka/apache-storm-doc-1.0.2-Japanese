@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Concepts</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Concepts</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>このページには、Stormの主な概念と、詳細情報があるリソースへのリンクが掲載されています。議論される概念は次のとおりです:</p>
+
+<ol>
+<li>Topologies</li>
+<li>Streams</li>
+<li>Spouts</li>
+<li>Bolts</li>
+<li>Stream groupings</li>
+<li>Reliability</li>
+<li>Tasks</li>
+<li>Workers</li>
+</ol>
+
+<h3 id="topologies">Topologies</h3>
+
+<p>リアルタイムアプリケーションのロジックは、Stormのトポロジにパッケージ化されています。Stormのトポロジは、MapReduceジョブに似ています。主な相違点の1つは、MapReduceジョブがいつかは終了するのに対し、トポロジは永遠に実行されることです（もちろん、それを強制終了するまで）。トポロジは、ストリームの集合に接続されたSpoutとBoltのグラフです。これらの概念については以下で説明します。</p>
+
+<p><strong>Resources:</strong></p>
+
+<ul>
+<li><a href="javadocs/org/apache/storm/topology/TopologyBuilder.html">TopologyBuilder</a>: このクラスを使用して、Javaでトポロジを構築します</li>
+<li><a href="Running-topologies-on-a-production-cluster.html">Running topologies on a production cluster</a></li>
+<li><a href="Local-mode.html">Local mode</a>: これを読んで、ローカルモードでトポロジを開発してテストする方法を学んでください。</li>
+</ul>
+
+<h3 id="streams">Streams</h3>
+
+<p>ストリームはStormが行っている抽象化の中核にあるものです。ストリームは、分散処理に適するよう並列に処理され生成される、境界付けられていないタプルの列です。ストリームは、ストリームのタプル内のフィールドに名前付けられたスキーマで定義されます。デフォルトでは、タプルにはintegers, longs, shorts, bytes, strings, doubles, floats, booleans, byte arraysが含まれます。カスタム型をタプル内でネイティブに使用できるように、独自のシリアライザを定義することもできます。</p>
+
+<p>ストリームは、宣言の際にIDが与えられます。単一ストリームのSpoutとBoltは非常に一般的なので、<a href="javadocs/org/apache/storm/topology/OutputFieldsDeclarer.html">OutputFieldsDeclarer</a>には、idを指定せずに単一のストリームを宣言するための便利なメソッドがあります。この場合、ストリームにはデフォルトのID「default」が与えられます。</p>
+
+<p><strong>Resources:</strong></p>
+
+<ul>
+<li><a href="javadocs/org/apache/storm/tuple/Tuple.html">Tuple</a>: ストリームはタプルで構成されています</li>
+<li><a href="javadocs/org/apache/storm/topology/OutputFieldsDeclarer.html">OutputFieldsDeclarer</a>: ストリームとそのスキーマの宣言に使用されます</li>
+<li><a href="Serialization.html">Serialization</a>: Stormのタプルに対する動的型付けならびにカスタムシリアル化の宣言に関する情報</li>
+</ul>
+
+<h3 id="spouts">Spouts</h3>
+
+<p>Spoutは、トポロジにおけるストリームの源泉です。一般に、Spoutは外部の資源（例えば、KestrelキューまたはTwitter API）からタプルを読み取り、それらをトポロジに送出します。Spoutは<strong>reliable</strong>か<strong>unreliable</strong>のいずれかです。信頼できるSpoutは、Stormによって処理されなかった場合にはタプルを再実行することができますが、信頼性の低いスパウトはタプルが送出されるとすぐにそれを忘れます。</p>
+
+<p>Spoutは複数のストリームを送出することができます。これを行うには、<a href="javadocs/org/apache/storm/topology/OutputFieldsDeclarer.html">OutputFieldsDeclarer</a>の <code>declareStream</code>メソッドを使用して複数のストリームを宣言し、<a href="javadocs/org/apache/storm/spout/SpoutOutputCollector.html">SpoutOutputCollector</a>の<code>emit</code>メソッドに出力するストリームとして指定します。</p>
+
+<p>Spoutにおける中核的なメソッドは、<code>nextTuple</code>です。<code>nextTuple</code>は新しいタプルをトポロジーに送出し、送出する新たなタプルがない場合にはreturnします。Stormは同じスレッド上のすべてのSpoutのメソッドを呼び出すため、<code>nextTuple</code>はSpoutにおける実装をブロックしないようにしなければなりません。</p>
+
+<p>Spoutにおけるその他の中核的なメソッドは、<code>ack</code>と<code>fail</code>です。これらは、Spoutが発生したタプルがトポロジで正常に完了したか、完了できなかったことをStormが検出したときに呼び出されます。 <code>ack</code>と<code>fail</code>は信頼できるSpoutだけにが必要です。詳細は、<a href="javadocs/org/apache/storm/spout/ISpout.html">the Javadoc</a>を参照してください。</p>
+
+<p><strong>Resources:</strong></p>
+
+<ul>
+<li><a href="javadocs/org/apache/storm/topology/IRichSpout.html">IRichSpout</a>: Spoutが実装しなければならないインターフェースです。</li>
+<li><a href="Guaranteeing-message-processing.html">Guaranteeing message processing</a></li>
+</ul>
+
+<h3 id="bolts">Bolts</h3>
+
+<p>トポロジにおけるすべての処理はBoltで行われます。Boltは、フィルタリング、関数適用、集約、結合、データベースとの会話など、何でもできます。</p>
+
+<p>Boltは簡単なストリーム変換を行うことができます。複雑なストリーム変換を行うには、しばしば複数のステップが必要であり、したがって複数のBoltが必要です。たとえば、つぶやきのストリームを流行の画像のストリームに変換するには、少なくとも2つのステップが必要です: 各画像のリツイートのローリングカウントを行うBoltと、1つ以上のBoltがトップXの画像を出力します（2つのBoltではなく3つのBoltを使用する方法で、よりスケーラブルなストリーム変換を行うことができます）。</p>
+
+<p>Boltは複数のストリームを送出できます。これを行うには、<a href="javadocs/org/apache/storm/topology/OutputFieldsDeclarer.html">OutputFieldsDeclarer</a>の <code>declareStream</code>メソッドを使用して複数のストリームを宣言し、<a href="javadocs/org/apache/storm/task/OutputCollector.html">OutputCollector</a>の<code>emit</code>メソッドに出力するストリームとして指定します。</p>
+
+<p>Boltの入力ストリームを宣言際には、常に別のコンポーネントの特定のストリームをサブスクライブさせます。別のコンポーネントのすべてのストリームをサブスクライブするには、それぞれのストリームを個別にサブスクライブする必要があります。<a href="javadocs/org/apache/storm/topology/InputDeclarer.html">InputDeclarer</a>には、デフォルトのストリームIDで宣言されたストリームをサブスクライブするための構文糖衣があります。<code>declarer.shuffleGrouping(&quot;1&quot;)</code>では、コンポーネント&quot;1&quot;におけるデフォルトストリームをサブスクライブし、これは<code>declarer.shuffleGrouping(&quot;1&quot;, DEFAULT_STREAM_ID)</code>と同等です。</p>
+
+<p>Boltにおける中核的なメソッドは、入力として新しいタプルを取り込む<code>execute</code>メソッドです。 Boltは、<a href="javadocs/org/apache/storm/task/OutputCollector.html">OutputCollector</a> オブジェクトを使用して新しいタプルを送出します。Boltは、それらが処理する全てのタプルについて<code>OutputCollector</code>の<code>ack</code>メソッドを呼び出さなければならないので、Stormはタプルが完了したことを知ることができます（そして、いつかはオリジナルのSpoutタプルに対して安全にackすることができます）。入力タプルを処理し、そのタプルに基づいて0個以上のタプルを送出し、入力タプルをackする一般的なケースに対して、Stormは自動的にackを行う<a href="javadocs/org/apache/storm/topology/IBasicBolt.html">IBasicBolt</a>インターフェイスを提供します。</p>
+
+<p>Boltで新しいスレッドを起動すし、非同期に処理することにまったく問題はありません。<a href="javadocs/org/apache/storm/task/OutputCollector.html">OutputCollector</a>はスレッドセーフであり、いつでも呼び出すことができます。</p>
+
+<p><strong>Resources:</strong></p>
+
+<ul>
+<li><a href="javadocs/org/apache/storm/topology/IRichBolt.html">IRichBolt</a>: Boltの一般的なインターフェースです。</li>
+<li><a href="javadocs/org/apache/storm/topology/IBasicBolt.html">IBasicBolt</a>: フィルタリングや単純な関数を実行するボルトを定義するための便利なインターフェイスです。</li>
+<li><a href="javadocs/org/apache/storm/task/OutputCollector.html">OutputCollector</a>: ボルトは、このクラスのインスタンスを使用して出力ストリームにタプルを送出します</li>
+<li><a href="Guaranteeing-message-processing.html">Guaranteeing message processing</a></li>
+</ul>
+
+<h3 id="stream-groupings">Stream groupings</h3>
+
+<p>トポロジの定義の一部では、各Boltに対して入力として受け取るべきストリームを指定します。ストリームグループ化は、そのストリームをBoltのタスク間でどのように分割すべきかを定義します。</p>
+
+<p>Stormには8つのビルトインストリームグルーピングがあり、<a href="javadocs/org/apache/storm/grouping/CustomStreamGrouping.html">CustomStreamGrouping</a>インターフェイスを実装することで、カスタムストリームグループを実装できます。</p>
+
+<ol>
+<li><strong>Shuffle grouping</strong>: タプルは、各Boltが同数のタプルを取得することを保証するように、Boltのタスクにランダムに分配されます。</li>
+<li><strong>Fields grouping</strong>: グループ化で指定されたフィールドによってストリームが分割されます。たとえば、ストリームが&quot;user-id&quot;フィールドでグループ化されている場合、同じ&quot;user-id&quot;を持つタプルは常に同じタスクにいきますが、異なる&quot;user-id&quot;を持つタプルは異なるタスクにいきます。</li>
+<li><strong>Partial Key grouping</strong>: フィールドグループ化のように、グループ化で指定されたフィールドによってストリームが分割されますが、2つの下流のBoltの間で負​​荷分散されます。<a href="https://melmeric.files.wordpress.com/2014/11/the-power-of-both-choices-practical-load-balancing-for-distributed-stream-processing-engines.pdf">この論文</a>は、どのように機能するかと、それがもたらす利点についての良い説明です。</li>
+<li><strong>All grouping</strong>: ストリームはすべてのBoltのタスクにわたって複製されます。このグループは注意して使用してください。</li>
+<li><strong>Global grouping</strong>: ストリーム全体がボルトのタスクの1つに移動します。具体的には、IDが最も小さいタスクに移動します。</li>
+<li><strong>None grouping</strong>: このグループ化では、ストリームのグループ化に気にしないことを指定します。今のところ、None groupingはShuffle groupingと同等です。結局のところ、StormはNone groupingなBoltをプッシュダウンし、（可能であれば）それらがサブスクライブしているBoltまたはSpoutと同じスレッドで実行します。</li>
+<li><strong>Direct grouping</strong>: これは特別な種類のグループ化です。このようにグループ化されたストリームは、タプルの<strong>プロデューサ</strong>がこのタプルを受け取るコンシューマのタスクを決定します。Direct groupingは、ダイレクトストリームとして宣言されたストリームでのみ宣言できます。ダイレクトストリームに出力されるタプルは、[emitDirect](javadocs/org/apache/storm/task/OutputCollector.html#emitDirect(int, int, java.util.List)メソッドの1つを使用して出力する必要があります。提供された<a href="javadocs/org/apache/storm/task/TopologyContext.html">TopologyContext</a>を使用するか、タプルが送信されたタスクIDを返す<a href="javadocs/org/apache/storm/task/OutputCollector.html">OutputCollector</a>の<code>emit</code>メソッドの出力を追跡することによって、BoltはコンシューマのタスクIDを取得できます。</li>
+<li><strong>Local or shuffle grouping</strong>: 対象とするBoltの同じワーカープロセスで1つ以上のタスクがある場合、タプルはそれらのうちの処理中のタスクだけにシャッフルされます。それ以外の場合、これは通常のShuffle groupingのように動作します。</li>
+</ol>
+
+<p><strong>Resources:</strong></p>
+
+<ul>
+<li><a href="javadocs/org/apache/storm/topology/TopologyBuilder.html">TopologyBuilder</a>: このクラスを使用してトポロジを定義します</li>
+<li><a href="javadocs/org/apache/storm/topology/InputDeclarer.html">InputDeclarer</a>: このオブジェクトは<code>TopologyBuilder</code>で<code>setBolt</code>が呼び出されたときに返され、Boltの入力ストリームと、ストリームをグループ化する方法を宣言します</li>
+</ul>
+
+<h3 id="reliability">Reliability</h3>
+
+<p>StormはすべてのSpoutタプルがトポロジによって全て処理されることを保証します。これは、すべてのSpoutタプルによってトリガーされたタプルのツリーを追跡し、タプルのツリーがいつ正常に完了したかを判断することによって行います。すべてのトポロジには、&quot;message timeout&quot;が関連付けられています。StormはSpoutタプルがそのタイムアウト時間内に完了したことを検出できない場合、失敗したものとして後でそれを再送します。</p>
+
+<p>Stormの信頼性機能を利用するには、タプルツリーにおいて新しい葉が生成されていることをStormに伝え、個々のタプルの処理が終わるたびにStormに伝える必要があります。これらは、タプルを送出するために使用される<a href="javadocs/org/apache/storm/task/OutputCollector.html">OutputCollector</a>オブジェクトを使用して行われます。Anchoringは<code>emit</code>メソッドで行い、<code>ack</code>メソッドを使ってタプルを処理し終えたことを宣言します。</p>
+
+<p>この機能に関する詳細な解説は、<a href="Guaranteeing-message-processing.html">Guaranteeing message processing</a>.を参照してください。</p>
+
+<h3 id="tasks">Tasks</h3>
+
+<p>各SpoutまたはBoltは、クラスタ全体で多くのタスクを実行します。 各タスクは1つの実行スレッドに対応し、ストリームグループはタプルをあるタスクセットから別のタスクセットに送信する方法を定義します。<a href="javadocs/org/apache/storm/topology/TopologyBuilder.html">TopologyBuilder</a>の<code>setSpout</code>メソッドと<code>setBolt</code>メソッドで、各SpoutやBoltのparallelismを設定します。</p>
+
+<h3 id="workers">Workers</h3>
+
+<p>トポロジは、1つまたはそれ以上のワーカープロセスで実行されます。各ワーカープロセスは物理的にはJVMであり、トポロジのすべてのタスクのサブセットを実行します。たとえば、トポロジにおける合算したparallelismが300で、50のワーカーが割り当てられている場合、各ワーカーは6つのタスクをワーカー内のスレッドとして実行します。Stormはすべてのワーカーににタスクを均等に配分しようとします。</p>
+
+<p><strong>Resources:</strong></p>
+
+<ul>
+<li><a href="javadocs/org/apache/storm/Config.html#TOPOLOGY_WORKERS">Config.TOPOLOGY_WORKERS</a>: この設定では、トポロジを実行するために割り当てるワーカーの数をセットします</li>
+</ul>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

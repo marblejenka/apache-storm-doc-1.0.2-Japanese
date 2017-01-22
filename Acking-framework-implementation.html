@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Apache Storm</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title"></h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>Stormの<a href="https://github.com/apache/incubator-storm/blob/46c3ba7/storm-core/src/clj/backtype/storm/daemon/acker.clj#L28">acker</a>は、各タプルツリーの完了をチェックサムハッシュで追跡します。タプルが送信されるたびに、その値はチェックサムにXOR演算され、タプルがackされるたびにその値がXOR演算されます。すべてのタプルが正常にackされた場合、チェックサムはゼロになります（そうでない場合にチェックサムがゼロになる確率はほとんどゼロになります）。</p>
+
+<p>wikiにある<a href="Guaranteeing-message-processing.html#what-is-storms-reliability-api">信頼性メカニズム</a>についてもう少し詳しく読むことができます。これは内部の詳細を説明しています。</p>
+
+<h3 id="acker-execute">acker <code>execute()</code></h3>
+
+<p>ackerは実際には<code>mk-acker-bolt</code>で定義された<a href="https://github.com/apache/incubator-storm/blob/46c3ba7/storm-core/src/clj/backtype/storm/daemon/acker.clj#L36">executeメソッド</a>を持つ普通のboltです。新しいタプルツリーが生成されたとき、Spoutは各タプルの受信者にXORされたエッジIDを送信し、ackerはその<code>pending</code>元帳に記録します。エグゼキュータがタプルをackするたびに、ackerは、タプルが保持するエッジIDのXORである部分チェックサム（元帳からクリアする）と、エグゼキュータが送出した各下流のタプルのエッジIDのを受け取ります（それらを元帳に追加される）。</p>
+
+<p>これは以下のようにして達成されます。</p>
+
+<p>チックタプルでは、保留中のタプルツリーのチェックサムを成功または失敗に向けて進めます。それ以外の場合は、タプルツリーの記録を更新または生成します。</p>
+
+<ul>
+<li>on init: 与えられたチェックサム値で初期化し、後でspoutのIDを記録します。</li>
+<li>on ack: 既存のチェックサムを部分チェックサムでXOR演算する</li>
+<li>on fail: 失敗したものとしてマークする</li>
+</ul>
+
+<p>次に、RotatingMapに<a href="https://github.com/apache/incubator-storm/blob/46c3ba7/storm-core/src/clj/backtype/storm/daemon/acker.clj#L50">記録をputし</a>)（リセットすることが有効期限までのカウントダウンになる）、アクションを実行します：</p>
+
+<ul>
+<li>合計チェックサムがゼロの場合、タプルツリーは完了しています: タプルツリー保留中のコレクションから削除して、Spoutに成功を通知します</li>
+<li>タプルツリーが失敗した場合も、完了になります: タプルツリーを保留中のコレクションから削除し、Spoutに失敗したことを通知します</li>
+</ul>
+
+<p>最後に、ackerそのものにackを伝えます。</p>
+
+<h3 id="pending-tuples-and-the-rotatingmap">Pending tuples and the <code>RotatingMap</code></h3>
+
+<p>ackerは、処理を効率的に期限切れにするために、Storm内のいくつかの場所で使用されるシンプルな仕組みである<a href="https://github.com/apache/incubator-storm/blob/master/storm-core/src/jvm/backtype/storm/utils/RotatingMap.java#L19"><code>RotatingMap</code></a>に保留中のタプルを格納します。</p>
+
+<p>RotatingMapはHashMapとして動作し、O(1)でデータにアクセスすることを保証します。</p>
+
+<p>内部的には、それは複数のHashMap(&#39;buckets&#39;)を保持し、それぞれが同時に期限切れになるレコードのまとまりを保持します。最長生存しているbucketをのdeath row、最新のものをnurseryとしましょう。値がRotatingMapに <code>.put()</code>されると、それはnurseryに再配置され -- 他のバケットから削除されます（効率的ににdeathした時刻をリセットします）。</p>
+
+<p>その所有者が<code>.rotate()</code>を呼び出すたびに、RotatingMapはそれぞれのまとまりを有効期限に向けて進めます。（通常、Stormオブジェクトは、システムからのチックタプルの受信があるたびに、rotateを呼び出します。）前のdeath rowバケットにキーと値のペアがある場合、その所有者に適切な処置（例えば、タプルの失敗）をさせるために、RotatingMapは各キーと値のペアについてコールバック（コンストラクタで指定）を呼び出します。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

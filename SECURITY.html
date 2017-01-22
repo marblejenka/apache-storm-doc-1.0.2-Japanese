@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Running Apache Storm Securely</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Running Apache Storm Securely</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h1 id="running-apache-storm-securely">Running Apache Storm Securely</h1>
+
+<p>Apache Stormは、クラスタをセキュアにするためのさまざまな設定オプションを提供します
+デフォルトでは、すべての認証と認可は無効になっていますが、
+必要に応じて有効にすることができます。</p>
+
+<h2 id="firewall-os-level-security">Firewall/OS level Security</h2>
+
+<p>正式な認証と認可を有効にすることなく、安全なStormのクラスタを作成できます。
+しかし、そうするには、通常、
+実行可能な操作を制限するようにオペレーティングシステムを設定する必要があります。
+認証と認可が有効なクラスタを運用する予定がある場合でも、これは一般的には良い考えです。</p>
+
+<p>これらの予防措置を設定する方法の正確な詳細は大きく異なり、
+このドキュメントのスコープを超えています。</p>
+
+<p>ファイアウォールを有効にして、ネットワークのインバウンドをクラスタそのものや信頼できるホストやサービスだけに制限するのは、
+一般的には良い考えです。
+Stormが使用するportの完全なリストは以下の通りです。</p>
+
+<p>クラスタが処理しているデータがsensitiveな場合は、
+クラスタ内のホスト間で送信されているすべてのトラフィックを暗号化するようにIPsecを設定するのがもっとも望ましいです。</p>
+
+<h3 id="ports">Ports</h3>
+
+<table><thead>
+<tr>
+<th>Default Port</th>
+<th>Storm Config</th>
+<th>Client Hosts/Processes</th>
+<th>Server</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>2181</td>
+<td><code>storm.zookeeper.port</code></td>
+<td>Nimbus, Supervisors, ならびに Worker processes</td>
+<td>Zookeeper</td>
+</tr>
+<tr>
+<td>6627</td>
+<td><code>nimbus.thrift.port</code></td>
+<td>Storm clients, Supervisors, ならびに UI</td>
+<td>Nimbus</td>
+</tr>
+<tr>
+<td>8080</td>
+<td><code>ui.port</code></td>
+<td>Client Web Browsers</td>
+<td>UI</td>
+</tr>
+<tr>
+<td>8000</td>
+<td><code>logviewer.port</code></td>
+<td>Client Web Browsers</td>
+<td>Logviewer</td>
+</tr>
+<tr>
+<td>3772</td>
+<td><code>drpc.port</code></td>
+<td>External DRPC Clients</td>
+<td>DRPC</td>
+</tr>
+<tr>
+<td>3773</td>
+<td><code>drpc.invocations.port</code></td>
+<td>Worker Processes</td>
+<td>DRPC</td>
+</tr>
+<tr>
+<td>3774</td>
+<td><code>drpc.http.port</code></td>
+<td>External HTTP DRPC Clients</td>
+<td>DRPC</td>
+</tr>
+<tr>
+<td>670{0,1,2,3}</td>
+<td><code>supervisor.slots.ports</code></td>
+<td>Worker Processes</td>
+<td>Worker Processes</td>
+</tr>
+</tbody></table>
+
+<h3 id="ui-logviewer">UI/Logviewer</h3>
+
+<p>UIとlogviewerプロセスは、クラスタが何をしているかを見るだけでなく、
+実行中のトポロジを操作する方法を提供します。
+通常、これらのプロセスをクラスタのユーザー以外は公開しないでください。</p>
+
+<p>通常、javaサーブレットフィルタとあわせて、いくつかの形式の認証が要求されます。</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">ui.filter</span><span class="pi">:</span> <span class="s2">"</span><span class="s">filter.class"</span>
+<span class="s">ui.filter.params</span><span class="pi">:</span> <span class="s2">"</span><span class="s">param1":"value1"</span>
+</code></pre></div>
+<p>あるいは、UIとlogviewerのポートをローカルホストからの接続のみを受け入れるように制限し、受信した接続を認証/許可してStormのプロセスにプロキシできる別のWebサーバー(Apacheのhttpdなど)をフロントにすることもできます。これが機能するようにするには、uiプロセスはstorm.yamlでlogviewer.portをプロキシのポートに設定する必要がありますが、一方で、logviewersはバインドしようとしている実際のポートに設定する必要があります。</p>
+
+<p>サーブレットフィルタを使用することによって、
+トポロジごとに関連するページにアクセスすることを許可されている/いないユーザーを指定できるため、
+サーブレットフィルタを使用するのが望ましいです。</p>
+
+<p>Storm UIは、hadoop-authからAuthenticationFilterを使用するように設定できます。</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">ui.filter</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.hadoop.security.authentication.server.AuthenticationFilter"</span>
+<span class="s">ui.filter.params</span><span class="pi">:</span>
+   <span class="s2">"</span><span class="s">type"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">kerberos"</span>
+   <span class="s2">"</span><span class="s">kerberos.principal"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">HTTP/nimbus.witzend.com"</span>
+   <span class="s2">"</span><span class="s">kerberos.keytab"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">/vagrant/keytabs/http.keytab"</span>
+   <span class="s2">"</span><span class="s">kerberos.name.rules"</span><span class="pi">:</span> <span class="s2">"</span><span class="s">RULE:[2:$1@$0]([jt]t@.*EXAMPLE.COM)s/.*/$MAPRED_USER/</span><span class="nv"> </span><span class="s">RULE:[2:$1@$0]([nd]n@.*EXAMPLE.COM)s/.*/$HDFS_USER/DEFAULT"</span>
+</code></pre></div>
+<p>プリンシパル&#39;HTTP/{hostname}&#39;を作成していることを確認してください(ここでは、ホスト名はUIデーモンが動作する場所にする必要があります)</p>
+
+<p>いったん設定すると、ユーザーはUIにアクセスする前にkinitを行う必要があります。
+Once configured users needs to do kinit before accessing UI.
+例:
+curl  -i --negotiate -u:anyUser  -b ~/cookiejar.txt -c ~/cookiejar.txt  <a href="http://storm-ui-hostname:8080/api/v1/cluster/summary">http://storm-ui-hostname:8080/api/v1/cluster/summary</a></p>
+
+<ol>
+<li>Firefox: about:configにいって、network.negotiate-auth.trusted-urisを検索し、ダブルクリックして &quot;<a href="http://storm-ui-hostname:8080">http://storm-ui-hostname:8080</a>&quot; を追加してください</li>
+<li>Google-chrome:  コマンドラインから: google-chrome --auth-server-whitelist=&quot;<em>storm-ui-hostname&quot; --auth-negotiate-delegate-whitelist=&quot;</em>storm-ui-hostname&quot;<br></li>
+<li>IE:  &quot;storm-ui-hostname&quot;を含むように信頼できるWebサイトを設定し、そのWebサイトとのネゴシエーションを許可してください</li>
+</ol>
+
+<p><strong>注意</strong>: AD MIT Keberosの設定では、キーのサイズがデフォルトのUI jettyサーバーの要求ヘッダーサイズより大きくなっています。storm.yamlでui.header.buffer.bytesを65536に設定してください。詳細は<a href="https://issues.apache.org/jira/browse/STORM-633">STORM-633</a>を参照してください。</p>
+
+<h2 id="ui-drpc-ssl">UI / DRPC SSL</h2>
+
+<p>UIとDRPCの両方で、ユーザーはsslを設定できます。</p>
+
+<h3 id="ui">UI</h3>
+
+<p>UIユーザーは、storm.yamlに次のconfigを設定する必要があります。この手順を実行する前に、適切なキーと証明書を持つキーストアを生成する必要があります。</p>
+
+<ol>
+<li>ui.https.port </li>
+<li>ui.https.keystore.type (example &quot;jks&quot;)</li>
+<li>ui.https.keystore.path (example &quot;/etc/ssl/storm_keystore.jks&quot;)</li>
+<li>ui.https.keystore.password (keystore password)</li>
+<li>ui.https.key.password (private key password)</li>
+</ol>
+
+<p>オプション設定</p>
+
+<ol>
+<li>ui.https.truststore.path (example &quot;/etc/ssl/storm_truststore.jks&quot;)</li>
+<li>ui.https.truststore.password (truststore password)</li>
+<li>ui.https.truststore.type (example &quot;jks&quot;)</li>
+</ol>
+
+<p>双方向の認証を要求する場合、</p>
+
+<ol>
+<li>ui.https.want.client.auth (これをtrueにすると、サーバーがクライアント証明書認証を要求し、認証が提供されていない場合でも接続を維持する)</li>
+<li>ui.https.need.client.auth (これをtrueにすると、サーバーがクライアントに認証を要求する)</li>
+</ol>
+
+<h3 id="drpc">DRPC</h3>
+
+<p>UIと同様に、ユーザーはDRPCのために以下の設定を行う必要があります</p>
+
+<ol>
+<li>drpc.https.port </li>
+<li>drpc.https.keystore.type (example &quot;jks&quot;)</li>
+<li>drpc.https.keystore.path (example &quot;/etc/ssl/storm_keystore.jks&quot;)</li>
+<li>drpc.https.keystore.password (keystore password)</li>
+<li>drpc.https.key.password (private key password)</li>
+</ol>
+
+<p>オプション設定</p>
+
+<ol>
+<li>drpc.https.truststore.path (example &quot;/etc/ssl/storm_truststore.jks&quot;)</li>
+<li>drpc.https.truststore.password (truststore password)</li>
+<li>drpc.https.truststore.type (example &quot;jks&quot;)</li>
+</ol>
+
+<p>双方向の認証を要求する場合、</p>
+
+<ol>
+<li>drpc.https.want.client.auth (これをtrueにすると、サーバーがクライアント証明書認証を要求し、認証が提供されていない場合でも接続を維持する)</li>
+<li>drpc.https.need.client.auth (これをtrueにすると、サーバーがクライアントに認証を要求する)</li>
+</ol>
+
+<h2 id="authentication-kerberos">Authentication (Kerberos)</h2>
+
+<p>Stormは、thriftとSASLによるプラグイン可能な認証サポートを提供します。
+この例は、大部分の大規模なデータプロジェクトの一般的な設定であるため、
+Kerberosについてだけ扱います。</p>
+
+<p>各ノードでKDCを設定し、kerberosを設定することは、
+このドキュメントのスコープを超えており、すでに行っていることを前提としています。</p>
+
+<h3 id="create-headless-principals-and-keytabs">Create Headless Principals and keytabs</h3>
+
+<p>各Zookeeper Server、Nimbus、およびDRPCサーバーにはサービスプリンシパルが必要です。これには、規約として、実行するホストのFQDNが含まれます。zookeeperのユーザーはzookeeperで<em>なければならない</em>ことに注意してください。
+スーパーバイザーとUIには、実行するためのプリンシパルが必要ですが、アウトバウンドであるためサービスプリンシパルである必要はありません。
+以下は、Kerberosのプリンシパルを設定する方法の例ですが、
+詳細はKDCおよびOSによって異なる場合があります。</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Zookeeper (Will need one of these for each box in teh Zk ensamble)</span>
+sudo kadmin.local -q <span class="s1">'addprinc zookeeper/zk1.example.com@STORM.EXAMPLE.COM'</span>
+sudo kadmin.local -q <span class="s2">"ktadd -k /tmp/zk.keytab  zookeeper/zk1.example.com@STORM.EXAMPLE.COM"</span>
+<span class="c"># Nimbus and DRPC</span>
+sudo kadmin.local -q <span class="s1">'addprinc storm/storm.example.com@STORM.EXAMPLE.COM'</span>
+sudo kadmin.local -q <span class="s2">"ktadd -k /tmp/storm.keytab storm/storm.example.com@STORM.EXAMPLE.COM"</span>
+<span class="c"># All UI logviewer and Supervisors</span>
+sudo kadmin.local -q <span class="s1">'addprinc storm@STORM.EXAMPLE.COM'</span>
+sudo kadmin.local -q <span class="s2">"ktadd -k /tmp/storm.keytab storm@STORM.EXAMPLE.COM"</span>
+</code></pre></div>
+<p>適切なサーバーにkeytabを配布し、ZKまたはStormを実行しているヘッドレスユーザーのみがアクセスできるようにファイルシステムにおけるアクセス権限を設定してください。</p>
+
+<h4 id="storm-kerberos-configuration">Storm Kerberos Configuration</h4>
+
+<p>StormとZookeeperはjaas設定ファイルを使用してユーザーをログインさせます。
+各jaasファイルには、使用されているインタフェースに応じた複数のセクションがあります。</p>
+
+<p>StormでKerberos認証を有効にするには、次の設定をstorm.yamlにセットする必要があります</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">storm.thrift.transport</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.security.auth.kerberos.KerberosSaslTransportPlugin"</span>
+<span class="s">java.security.auth.login.config</span><span class="pi">:</span> <span class="s2">"</span><span class="s">/path/to/jaas.conf"</span>
+</code></pre></div>
+<p>NimbusとスーパーバイザプロセスもZooKeeper(ZK)に接続し、ZKでの認証にKerberosを使用するように設定したいと考えています。これ行うには、nimbus, ui, and supervisorのchildoptsに以下を追加します。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">-Djava.security.auth.login.config=/path/to/jaas.conf
+</code></pre></div>
+<p>執筆時点でのデフォルトのchildoptsに設定が与えられた例を次に示します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">nimbus.childopts</span><span class="pi">:</span> <span class="s2">"</span><span class="s">-Xmx1024m</span><span class="nv"> </span><span class="s">-Djava.security.auth.login.config=/path/to/jaas.conf"</span>
+<span class="s">ui.childopts</span><span class="pi">:</span> <span class="s2">"</span><span class="s">-Xmx768m</span><span class="nv"> </span><span class="s">-Djava.security.auth.login.config=/path/to/jaas.conf"</span>
+<span class="s">supervisor.childopts</span><span class="pi">:</span> <span class="s2">"</span><span class="s">-Xmx256m</span><span class="nv"> </span><span class="s">-Djava.security.auth.login.config=/path/to/jaas.conf"</span>
+</code></pre></div>
+<p>Stormのノードについては、jaas.confファイルは次のようになります。
+StormServerセクションは、nimbusとDRPCノードで使用されます。supervisorのノードに含める必要はありません。
+StormClientセクションは、ui、logviewer、およびsupervisorを含む、nimbusと通信するすべてのStormのクライアントによって使用されます。このセクションはゲートウェイでも使用しますが、その構造は少し異なります。
+Clientセクションは、zookeeperと通信するプロセスで使用され、実際にはnimbusとsupervisorに含める必要があります。
+Serverセクションは、zookeeperのサーバーによって使用されます。
+jaasに未使用セクションがあっても問題になりません。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">StormServer {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="$keytab"
+   storeKey=true
+   useTicketCache=false
+   principal="$principal";
+};
+StormClient {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="$keytab"
+   storeKey=true
+   useTicketCache=false
+   serviceName="$nimbus_user"
+   principal="$principal";
+};
+Client {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="$keytab"
+   storeKey=true
+   useTicketCache=false
+   serviceName="zookeeper"
+   principal="$principal";
+};
+Server {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="$keytab"
+   storeKey=true
+   useTicketCache=false
+   principal="$principal";
+};
+</code></pre></div>
+<p>以下は、生成されたkeytabに基づく例です</p>
+<div class="highlight"><pre><code class="language-" data-lang="">StormServer {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="/keytabs/storm.keytab"
+   storeKey=true
+   useTicketCache=false
+   principal="storm/storm.example.com@STORM.EXAMPLE.COM";
+};
+StormClient {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="/keytabs/storm.keytab"
+   storeKey=true
+   useTicketCache=false
+   serviceName="storm"
+   principal="storm@STORM.EXAMPLE.COM";
+};
+Client {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="/keytabs/storm.keytab"
+   storeKey=true
+   useTicketCache=false
+   serviceName="zookeeper"
+   principal="storm@STORM.EXAMPLE.COM";
+};
+Server {
+   com.sun.security.auth.module.Krb5LoginModule required
+   useKeyTab=true
+   keyTab="/keytabs/zk.keytab"
+   storeKey=true
+   useTicketCache=false
+   serviceName="zookeeper"
+   principal="zookeeper/zk1.example.com@STORM.EXAMPLE.COM";
+};
+</code></pre></div>
+<p>Nimbusは、プリンシパルをローカルユーザー名に変換して、他のサービスがこの名前を使用できるようにします。Kerberosの認証セットに対してこれを設定するには、</p>
+<div class="highlight"><pre><code class="language-" data-lang="">storm.principal.tolocal: "org.apache.storm.security.auth.KerberosPrincipalToLocal"
+</code></pre></div>
+<p>これはnimbuでのみ行う必要があり、他のどのノード影響はありません。
+また、ZooKeeperの観点からトポロジ、supervisorデーモンとnimbusデーモンが、動作していることを通知する必要があります。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">storm.zookeeper.superACL: "sasl:${nimbus-user}"
+</code></pre></div>
+<p>ここで、<em>nimbus-user</em>は、nimbusがZooKeeperで認証するために使用するKerberosユーザーです。ZooKeeeperがホストとrealmを削除している場合は、このユーザーでもホストとrealmも削除する必要があります。</p>
+
+<h4 id="zookeeper-ensemble">ZooKeeper Ensemble</h4>
+
+<p>セキュアなZKを設定する方法の詳細は、このドキュメントの範囲を超えています。しかし、一般的には、各サーバでSASL認証を有効にし、必要に応じてホストとrealmを取り除くはずです。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">authProvider.1 = org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+kerberos.removeHostFromPrincipal = true
+kerberos.removeRealmFromPrincipal = true
+</code></pre></div>
+<p>また、サーバーを起動するときにコマンドラインにjaas.confを含めて、keytabが見つかるようにすることもできます。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">-Djava.security.auth.login.config=/jaas/zk_jaas.conf
+</code></pre></div>
+<h4 id="gateways">Gateways</h4>
+
+<p>理想的には、エンドユーザーはstormと対話する前にkinitを実行する必要だけあります。これをシームレスに行うために、ゲートウェイ上のデフォルトのjaas.confを次のようにする必要があります</p>
+<div class="highlight"><pre><code class="language-" data-lang="">StormClient {
+   com.sun.security.auth.module.Krb5LoginModule required
+   doNotPrompt=false
+   useTicketCache=true
+   serviceName="$nimbus_user";
+};
+</code></pre></div>
+<p>エンドユーザーは、keytabを持つヘッドレスユーザーがいる場合、これを上書きすることができます。</p>
+
+<h3 id="authorization-setup">Authorization Setup</h3>
+
+<p><em>認証</em>はユーザーが何者なのかを確認する作業ですが、各ユーザーができることを制御するために<em>認可</em>も必要です。</p>
+
+<p>nimbusの認可についてのデフォルトのプラグインは<em>SimpleACLAuthorizer</em>。です<em>SimpleACLAuthorizer</em>を使用するには、次のように設定します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">nimbus.authorizer</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.security.auth.authorizer.SimpleACLAuthorizer"</span>
+</code></pre></div>
+<p>DRPCには別の認可設定があります。DRPCにSimpleACLAuthorizerを使用しないでください。</p>
+
+<p><em>SimpleACLAuthorizer</em>プラグインは、supervisorのユーザが誰であるかを知る必要があり、また、uiデーモンを実行しているユーザを含むすべての管理者ユーザについて知る必要があります。</p>
+
+<p>これらはそれぞれ<em>nimbus.supervisor.users</em>と*<em>nimbus.admins</em>によって設定されます。それぞれは、完全なKerberosプリンシパル名、またはホストとrealmが削除されたユーザーの名前のいずれかです。</p>
+
+<p>ログサーバーには独自の認証設定があります。これらは<em>logs.users</em>と<em>logs.groups</em>によって設定されます。 れらは、クラスタ内のすべてのノードの管理ユーザーまたはグループに設定する必要があります。</p>
+
+<p>トポロジがsubmitされると、送信側ユーザーはこのリスト内のユーザーも指定できます。指定されたユーザーおよびグループ(ならびにクラスタ全体の設定のユーザーに加えて)には、ログビューアで送信されたトポロジのワーカーログへのアクセスが許可されます。
+指定されたユーザーおよびグループ（クラスタ全体の設定のユーザーに加えて）には、submitされたトポロジのワーカーログへのログビューアにおけるアクセス権が与えられます。</p>
+
+<h3 id="supervisors-headless-user-and-group-setup">Supervisors headless User and group Setup</h3>
+
+<p>マルチテナントでユーザーを分離するためには、supervisorノードでの実行にsupervisorとヘッドレスのユーザとグループを一意してに実行する必要があります。これを有効にするには以下の手順に従ってください。</p>
+
+<ol>
+<li>すべてのスーパーバイザホストにヘッドレスユーザを追加する。</li>
+<li>一意なグループを作成し、supervisorノード上のヘッドレスユーザのプライマリグループにします。</li>
+<li>これらのスーパバイザノードのストームに関するプロパティを設定します。</li>
+</ol>
+
+<h3 id="multi-tenant-scheduler">Multi-tenant Scheduler</h3>
+
+<p>マルチテナントをより良くサポートするために、新しいスケジューラを作成しました。このスケジューラーセットを有効にするには、</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">storm.scheduler</span><span class="pi">:</span> <span class="s2">"</span><span class="s">org.apache.storm.scheduler.multitenant.MultitenantScheduler"</span>
+</code></pre></div>
+<p>このスケジューラの機能の多くは、Stormの認証に依存していることに注意してください。それらがなければ、スケジューラーはユーザーが何であるかを知ることができませんし、トポロジを適切に分離できません。</p>
+
+<p>マルチテナントスケジューラの目標は、トポロジそれぞれをを分離する方法を提供することですが、個々のユーザーがクラスタ内に持つことができるリソースも制限することもそうです。</p>
+
+<p>スケジューラーは現在、=storm.yaml=または=storm.yaml=と同じディレクトリーに置かれる=multitenant-scheduler.yaml=という別の設定ファイルを通じて設定できる1つの構成を持っています。nimbusを再起動しなくても更新できるので、=multitenant-scheduler.yaml=を使用することをお勧めします。</p>
+
+<p>=multitenant-scheduler.yaml=における唯一の設定である=multitenant.scheduler.user.pools=は、ユーザー名と、ユーザーがトポロジで使用できることが保証されているノードの最大数の対応付けです。</p>
+
+<p>例えば:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">multitenant.scheduler.user.pools</span><span class="pi">:</span> 
+    <span class="s2">"</span><span class="s">evans"</span><span class="pi">:</span> <span class="s">10</span>
+    <span class="s2">"</span><span class="s">derek"</span><span class="pi">:</span> <span class="s">10</span>
+</code></pre></div>
+<h3 id="run-worker-processes-as-user-who-submitted-the-topology">Run worker processes as user who submitted the topology</h3>
+
+<p>デフォルトでは、Stormはスーパーバイザを実行しているユーザでワーカーを実行します。これはセキュリティにとって理想的ではありません。Stormにトポロジを起動したユーザがでトポロジを実行するようにするには、以下を設定します。</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">supervisor.run.worker.as.user</span><span class="pi">:</span> <span class="s">true</span>
+</code></pre></div>
+<p>上記と合わせて、Stormをセキュアにするために適切に設定する必要があるファイルがいくつかあります。</p>
+
+<p>worker-launcherの実行ファイルは、スーパーバイザが異なるユーザーでワーカーを起動できるようにする特別なプログラムです。これが動作するようにするには、そのファイルがrootによって所有されている必要がありますが、そのグループは、スーパーバイザーのヘッドレスユーザーだけが属するグループに設定されています。
+また、6550のパーミッションが必要です。
+worker-launcher.cfgファイルもあります。通常は/etc/配下にあり、以下のようになります</p>
+<div class="highlight"><pre><code class="language-" data-lang="">storm.worker-launcher.group=$(worker_launcher_group)
+min.user.id=$(min_user_id)
+</code></pre></div>
+<p>ここで、worker_launcher_groupはスーパーバイザーが属するグループと同じであり、min.user.idはシステム上の最初の実ユーザーIDに設定されています。
+この設定ファイルは、rootが所有し、ワールドまたはグループの書き込み権限を持たないようにする必要があります。</p>
+
+<h3 id="impersonating-a-user">Impersonating a user</h3>
+
+<p>Stormのクライアントは、別のユーザに代わってリクエストをsumbitすることがあります。例えば、<code>userX</code>がoozieワークフローをsubmitし、ワークフロー実行の一部としてユーザ<code>oozie</code>が <code>userX</code>のためにトポロジをsubmitしたい場合などです。
+偽装機能を利用することでこれが実現できます。他のユーザーとしてトポロジを送信するには、<code>StormSubmitter.submitTopologyAs</code>APIを使用できます。
+あるいは、<code>NimbusClient.getConfiguredClientAs</code>を使用して、他のユーザとしてnimbusクライアントを取得し、このクライアントを使用して任意のニンバスアクション(kill/rebalance/activate/deactivate)を実行できます。</p>
+
+<p>偽装についての認可は、デフォルトでは無効になっています。つまり、すべてのユーザーが偽装を実行できます。許可されたユーザーだけが偽装を実行できるようにするには、 <code>nimbus.impersonation.authorizer</code>を<code>org.apache.storm.security.auth.authorizer.ImpersonationAuthorizer</code>に設定してnimbusを起動する必要があります。
+<code>ImpersonationAuthorizer</code>はaclとして<code>nimbus.impersonation.acl</code>を使用してユーザーを認証します。以下に、偽装をサポートするサンプルのnimbus設定を示します:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">nimbus.impersonation.authorizer</span><span class="pi">:</span> <span class="s">org.apache.storm.security.auth.authorizer.ImpersonationAuthorizer</span>
+<span class="s">nimbus.impersonation.acl</span><span class="pi">:</span>
+    <span class="s">impersonating_user1</span><span class="pi">:</span>
+        <span class="s">hosts</span><span class="pi">:</span>
+            <span class="pi">[</span><span class="nv">comma separated list of hosts from which impersonating_user1 is allowed to impersonate other users</span><span class="pi">]</span>
+        <span class="s">groups</span><span class="pi">:</span>
+            <span class="pi">[</span><span class="nv">comma separated list of groups whose users impersonating_user1 is allowed to impersonate</span><span class="pi">]</span>
+    <span class="s">impersonating_user2</span><span class="pi">:</span>
+        <span class="s">hosts</span><span class="pi">:</span>
+            <span class="pi">[</span><span class="nv">comma separated list of hosts from which impersonating_user2 is allowed to impersonate other users</span><span class="pi">]</span>
+        <span class="s">groups</span><span class="pi">:</span>
+            <span class="pi">[</span><span class="nv">comma separated list of groups whose users impersonating_user2 is allowed to impersonate</span><span class="pi">]</span>
+</code></pre></div>
+<p>oozieユースケースをサポートするには、設定を指定する必要があります:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">nimbus.impersonation.acl</span><span class="pi">:</span>
+    <span class="s">oozie</span><span class="pi">:</span>
+        <span class="s">hosts</span><span class="pi">:</span>
+            <span class="pi">[</span><span class="nv">oozie-host1</span><span class="pi">,</span> <span class="nv">oozie-host2</span><span class="pi">,</span> <span class="nv">127.0.0.1</span><span class="pi">]</span>
+        <span class="s">groups</span><span class="pi">:</span>
+            <span class="pi">[</span><span class="nv">some-group-that-userX-is-part-of</span><span class="pi">]</span>
+</code></pre></div>
+<h3 id="automatic-credentials-push-and-renewal">Automatic Credentials Push and Renewal</h3>
+
+<p>個々のトポロジには、資格情報(チケットとトークン)を安全なサービスにアクセスできるようにプッシュする機能があります。これをすべてのユーザーに公開することは、ユーザーにとって不利益になる可能性があります。
+これを一般的な状況で隠すために、プラグインを使用して資格証明を入力し、結果をJava Subjectに展開し、必要に応じてNimbusが資格情報を更新できるようにします。
+これらは以下の設定で制御されます。topology.auto-credentialsはjavaプラグインのリストであり、すべてがIAutoCredentialsインターフェースを実装しなければならず、それらはゲートウェイ上のcredentialを生成してワーカー側で解凍します。
+Kerberosによるセキュアなクラスタでは、デフォルトでorg.apache.storm.security.auth.kerberos.AutoTGTを指すように設定する必要があります。
+nimbus.credential.renewers.classesもこの値に設定して、ユーザーの代わりにnimbusが定期的にTGTを更新できるようにする必要があります。</p>
+
+<p>nimbus.credential.renewers.freq.secsは、何か更新する必要があるかどうかを確認するために更新プログラムがポーリングする頻度を制御しますが、デフォルトでも十分機能します。</p>
+
+<p>さらに、Nimbus自体を使用して、ユーザーがトポロジを送信する代わりに資格情報を取得することもできます。 これは、完全に修飾されたクラス名のリストであるnimbus.autocredential.plugins.classesを使用して設定することができます。これらはすべてINimbusCredentialPluginを実装する必要があります。 Nimbusは、構成されたすべての実装のpopulateCredentialsメソッドをトポロジの送信の一部として呼び出します。 この設定をtopology.auto-credentialsとnimbus.credential.renewers.classesとともに使用すると、資格情報をワーカー側に取り込むことができ、nimbusは自動的にそれらを更新できます。 現時点では、AutoHDFSとAutoHBaseの2つの例があります。これは、hdfsとhbaseの委譲トークンをトポロジサブミッターに自動的に取り込み、すべてのワーカーホストにkeytabを配布する必要がないようにします。</p>
+
+<p>さらに、Nimbus自体を使用して、ユーザーがトポロジをsubmitする代わりにcredentialを取得することもできます。
+これは、完全に修飾されたクラス名のリストであるnimbus.autocredential.plugins.classesを使用して設定することができます。これらはすべてINimbusCredentialPluginを実装する必要があります。
+Nimbusは、構成されたすべての実装のpopulateCredentialsメソッドをトポロジのsubmitする際に呼び出します。 
+この設定をtopology.auto-credentialsとnimbus.credential.renewers.classesとともに使用すると、credentialをワーカー側で取り込むことができ、nimbusは自動的にそれらを更新できます。
+現時点では、AutoHDFSとAutoHBaseの2つの例があります。これらは、hdfsとhbaseの委譲トークンをトポロジのsubmitterに自動的に取り込み、すべてのワーカーホストにkeytabを配布する必要がないようにします。</p>
+
+<h3 id="limits">Limits</h3>
+
+<p>デフォルトでは、ストームはあらゆるサイズのトポロジをsumbitすることを許しています。しかし、ZKや他のコンポーネントには、トポロジーが実際にどれだけ大きなものになるかについての限界があります。次の設定では、トポロジの最大サイズを制限できます。</p>
+
+<table><thead>
+<tr>
+<th>YAML Setting</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>nimbus.slots.perTopology</td>
+<td>トポロジが使用できるスロット/ワーカーの最大数。</td>
+</tr>
+<tr>
+<td>nimbus.executors.perTopology</td>
+<td>トポロジが使用できるエグゼキュータ/スレッドの最大数。</td>
+</tr>
+</tbody></table>
+
+<h3 id="log-cleanup">Log Cleanup</h3>
+
+<p>Logviewerデーモンは、死んだトポロジが出力した古いログファイルをクリーンアップするようになりました。</p>
+
+<table><thead>
+<tr>
+<th>YAML Setting</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>logviewer.cleanup.age.mins</td>
+<td>(最終更新時刻から起算して)そのログがクリーンアップされる前にワーカーのログがどのくらい古くなっていなければならないか(生きているワーカーのログは決してログビューアによってクリーンアップされません。ログはlogbackによってロールされます)。</td>
+</tr>
+<tr>
+<td>logviewer.cleanup.interval.secs</td>
+<td>ログビューアがワーカーログをクリーンアップする時間間隔(秒単位)。</td>
+</tr>
+</tbody></table>
+
+<h3 id="allowing-specific-users-or-groups-to-access-storm">Allowing specific users or groups to access storm</h3>
+
+<p>SimpleACLAuthorizerを使用すると、kerberosの有効なチケットを持つユーザーは、トポロジをデプロイ、有効化、無効化したり、クラスタ情報にアクセスするなどの操作を行うことができます。
+ nimbus.usersまたはnimbus.groupsを指定することで、このアクセスを制限することができます。nimbus.usersが設定されている場合、リスト内のユーザーのみがトポロジをデプロイしたりクラスタにアクセスできます。
+ 同様にnimbus.groupsは、それらのグループに属するユーザへのStormクラスタへのアクセスを制限します。</p>
+
+<p>設定するにはstorm.yamlに以下の設定を指定してください</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">nimbus.users</span><span class="pi">:</span> 
+   <span class="pi">-</span> <span class="s2">"</span><span class="s">testuser"</span>
+</code></pre></div>
+<p>あるいは、</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">nimbus.groups</span><span class="pi">:</span> 
+   <span class="pi">-</span> <span class="s2">"</span><span class="s">storm"</span>
+</code></pre></div>
+<h3 id="drpc">DRPC</h3>
+
+<p>未記述</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

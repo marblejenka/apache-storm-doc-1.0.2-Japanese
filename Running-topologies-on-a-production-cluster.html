@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Running Topologies on a Production Cluster</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Running Topologies on a Production Cluster</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>本場クラスタでトポロジを実行するのは、<a href="Local-mode.html">ローカルモード</a>で実行するのと同様です。以下がその手順です:</p>
+
+<p>1) Javaを使用して定義する場合は、<a href="javadocs/org/apache/storm/topology/TopologyBuilder.html">TopologyBuilder</a>でトポロジを定義します</p>
+
+<p>2）<a href="javadocs/org/apache/storm/StormSubmitter.html">StormSubmitter</a>を使用して、クラスタにトポロジを送信します。<code>StormSubmitter</code>は、入力としてトポロジーの名前、トポロジーの設定、トポロジーそのものを受け取ります。例えば:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">Config</span> <span class="n">conf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Config</span><span class="o">();</span>
+<span class="n">conf</span><span class="o">.</span><span class="na">setNumWorkers</span><span class="o">(</span><span class="mi">20</span><span class="o">);</span>
+<span class="n">conf</span><span class="o">.</span><span class="na">setMaxSpoutPending</span><span class="o">(</span><span class="mi">5000</span><span class="o">);</span>
+<span class="n">StormSubmitter</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span><span class="s">"mytopology"</span><span class="o">,</span> <span class="n">conf</span><span class="o">,</span> <span class="n">topology</span><span class="o">);</span>
+</code></pre></div>
+<p>3) あなたのコードとあなたのコードのすべての依存関係を含むjarファイルを作成します(Stormを除く -- Storm jarファイルはワーカーノードのクラスパスに追加されます)。</p>
+
+<p>Mavenを使用している場合は、<a href="http://maven.apache.org/plugins/maven-assembly-plugin/">Maven Assembly Plugin</a>でパッケージ化できます。 これをpom.xmlに追加してください：</p>
+<div class="highlight"><pre><code class="language-xml" data-lang="xml">  <span class="nt">&lt;plugin&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>maven-assembly-plugin<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;configuration&gt;</span>
+      <span class="nt">&lt;descriptorRefs&gt;</span>  
+        <span class="nt">&lt;descriptorRef&gt;</span>jar-with-dependencies<span class="nt">&lt;/descriptorRef&gt;</span>
+      <span class="nt">&lt;/descriptorRefs&gt;</span>
+      <span class="nt">&lt;archive&gt;</span>
+        <span class="nt">&lt;manifest&gt;</span>
+          <span class="nt">&lt;mainClass&gt;</span>com.path.to.main.Class<span class="nt">&lt;/mainClass&gt;</span>
+        <span class="nt">&lt;/manifest&gt;</span>
+      <span class="nt">&lt;/archive&gt;</span>
+    <span class="nt">&lt;/configuration&gt;</span>
+  <span class="nt">&lt;/plugin&gt;</span>
+</code></pre></div>
+<p>次に、mvn assembly:assemblyを実行して、適切にパッケージされたjarを取得します。 クラスタにおけるクラスパスにはすでにStormがあるので、Storm jarが<a href="http://maven.apache.org/plugins/maven-assembly-plugin/examples/single/including-and-excluding-artifacts.html">除外</a>されていることをを必ず確認してください。</p>
+
+<p>4) jarへのパス、実行するクラス名、および使用する引数を指定して、 <code>storm</code>クライアントを使用してトポロジをクラスタに送信します:</p>
+
+<p><code>storm jar path/to/allmycode.jar org.me.MyTopology arg1 arg2 arg3</code></p>
+
+<p><code>storm jar</code>はクラスタにjarファイルを送り、<code>StormSubmitter</code>クラスを設定して正しいクラスタと通信します。この例では、jarをアップロードした後、<code>storm jar</code>は、引数&quot;arg1&quot;, &quot;arg2&quot;, ならびに &quot;arg3&quot;を持つ<code>org.me.MyTopology</code>のmain関数を呼び出します。</p>
+
+<p><code>storm</code>クライアントがStormクラスタと対話するように<a href="Setting-up-development-environment.html">開発環境の設定</a>を設定する方法を知ることができます。</p>
+
+<h3 id="common-configurations">Common configurations</h3>
+
+<p>トポロジごとに設定できるさまざまな構成があります。設定できるすべての設定のリストは、<a href="javadocs/org/apache/storm/Config.html">こちら</a>にあります。&quot;TOPOLOGY&quot;という接頭辞が付いているものは、トポロジ固有の基準で上書きできます(他はクラスタに対する設定であり、上書きすることはできません)。トポロジに設定されている一般的なものを次に示します:</p>
+
+<ol>
+<li><strong>Config.TOPOLOGY_WORKERS</strong>: トポロジーの実行に使用するワーカープロセスの数を設定します。たとえば、これを25に設定すると、すべてのタスクを実行するためにクラスタ全体で25のJavaプロセスが起動することになります。トポロジ内のすべてのコンポーネントにわたって150のparallelismを組み合わせた場合、各ワーカー・プロセスは6つのタスクをスレッドとして実行します。</li>
+<li><strong>Config.TOPOLOGY_ACKER_EXECUTORS</strong>: タプルツリーを追跡し、スパウトタプルが完全に処理されたときを検出するエグゼキュータの数を設定します。ackerはStormの信頼性モデルの不可欠な部分であり、詳細は<a href="Guaranteeing-message-processing.html">メッセージ処理の保証</a>で読むことができます。この変数を設定しないか、またはnullに設定することで、Stormはackerエグゼキュータの数をこのトポロジ用に設定されたワーカーの数に等しく設定します。この変数が0に設定されている場合、StormはSpoutから出てすぐにタプルをackし、信頼性を効果的に無効にします。</li>
+<li><strong>Config.TOPOLOGY_MAX_SPOUT_PENDING</strong>: これは、一度に1つのSpoutタスクにpendingされることができるSpoutタプルの最大数を設定します(pendingは、タプルがまだ確認されていないか、またはまだ失敗していないことを意味します)。キューの爆発を防ぐため、この設定を強くお勧めします。</li>
+<li><strong>Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS</strong>: Spoutタプルが完全に完了する前に失敗したとみなされる最大時間です。この値のデフォルトは30秒で、ほとんどのトポロジで要件を満たします。 Stormの信頼性モデルの仕組みの詳細については、<a href="Guaranteeing-message-processing.html">メッセージ処理の保証</a>を参照してください。</li>
+<li><strong>Config.TOPOLOGY_SERIALIZATIONS</strong>: タプル内でカスタム型を使用できるように、この設定を使用して、より多くのシリアライザをStormに登録することができます。</li>
+</ol>
+
+<h3 id="killing-a-topology">Killing a topology</h3>
+
+<p>トポロジを強制終了するには、次のコマンドを実行します:</p>
+
+<p><code>storm kill {stormname}</code></p>
+
+<p>トポロジをsubmitするときに使用したのと同じ名前を<code>storm kill</code>に付けます。</p>
+
+<p>ストームはすぐにトポロジを強制終了しません。代わりに、Spoutがすべてタプルを放出しないようにすべてのスパウトを無効にしてから、StormはConfig.TOPOLOGY_MESSAGE_TIMEOUT_SECS秒待機してからすべてのワーカーを破棄します。これにより、トポロジには、強制終了された時点でに処理していたタプルを完了するのに十分な時間が与えられます。</p>
+
+<h3 id="updating-a-running-topology">Updating a running topology</h3>
+
+<p>実行中のトポロジを更新するために、今時点でできることは、トポロジを強制終了して新しいトポロジとして再送信することです。実行中のトポロジーを新しいものと交換する<code>storm swap</code>コマンドを実装し、ダウンタイムを最小限に抑え、双方のトポロジがタプルを同時に処理する可能性をなくす機能が計画されています。</p>
+
+<h3 id="monitoring-topologies">Monitoring topologies</h3>
+
+<p>トポロジを監視する最適な場所は、Storm UIを使用することです。Storm UIには、実行中の各トポロジの各コンポーネントのスループットとレイテンシのパフォーマンスに関する、タスクにおけるエラーやきめ細かな統計情報が表示されます。</p>
+
+<p>また、クラスタマシンのワーカーログを見ることもできます。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

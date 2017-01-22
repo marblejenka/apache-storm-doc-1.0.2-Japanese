@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Storm Kafka Integration</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Storm Kafka Integration</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>Apache Kafka 0.8.xからデータをコンシュームするためのStormコアとTridentのSpout実装を提供します。</p>
+
+<h2 id="spouts">Spouts</h2>
+
+<p>TridentとStormコアのSpoutの両方をサポートしています。両方のSpoutの実装では、Kafkaブローカのホストからパーティションへの対応付けを追跡するBrokerHostインターフェイスと、Kafka関連のパラメータを制御するkafkaConfigを使用しています。</p>
+
+<h3 id="brokerhosts">BrokerHosts</h3>
+
+<p>Kafka spout/emitterを初期化するには、マーカーインタフェースBrokerHostsを実装するインスタンスを生成する必要があります。
+現在、次の2つの実装をサポートしています:</p>
+
+<h4 id="zkhosts">ZkHosts</h4>
+
+<p>Kafkaブローカーからパーティションへの対応付けを動的に追跡する場合は、ZkHostsを使用する必要があります。
+このクラスは、KafkaのZooKeeperエントリを使用してブローカーのホスト-&gt;パーティションの対応付けを追跡します。以下のメソッドを呼び出してオブジェクトをインスタンス化することができます</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="nf">ZkHosts</span><span class="o">(</span><span class="n">String</span> <span class="n">brokerZkStr</span><span class="o">,</span> <span class="n">String</span> <span class="n">brokerZkPath</span><span class="o">)</span> 
+    <span class="kd">public</span> <span class="nf">ZkHosts</span><span class="o">(</span><span class="n">String</span> <span class="n">brokerZkStr</span><span class="o">)</span>
+</code></pre></div>
+<p>上記においてbrokerZkStrはip:portです(例 localhost:2181)。brokerZkPathは、すべてのトピックとパーティション情報が格納されるルートディレクトリです。
+デフォルトでは、Kafkaのデフォルト実装が使用する /brokers です。</p>
+
+<p>デフォルトでは、ブローカとパーティションのマッピングはZooKeeperから60秒ごとに更新されます。
+これを変更する場合は、host.refreshFreqSecsを選択した値に設定する必要があります。</p>
+
+<h4 id="statichosts">StaticHosts</h4>
+
+<p>これは、broker-&gt;パーティションが静的である代替の実装です。
+このクラスのインスタンスを構築するには、まずGlobalPartitionInformationのインスタンスを構築する必要があります。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="n">Broker</span> <span class="n">brokerForPartition0</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Broker</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">);</span><span class="c1">//localhost:9092</span>
+    <span class="n">Broker</span> <span class="n">brokerForPartition1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Broker</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="mi">9092</span><span class="o">);</span><span class="c1">//localhost:9092 but we specified the port explicitly</span>
+    <span class="n">Broker</span> <span class="n">brokerForPartition2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Broker</span><span class="o">(</span><span class="s">"localhost:9092"</span><span class="o">);</span><span class="c1">//localhost:9092 specified as one string.</span>
+    <span class="n">GlobalPartitionInformation</span> <span class="n">partitionInfo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GlobalPartitionInformation</span><span class="o">();</span>
+    <span class="n">partitionInfo</span><span class="o">.</span><span class="na">addPartition</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">brokerForPartition0</span><span class="o">);</span><span class="c1">//mapping from partition 0 to brokerForPartition0</span>
+    <span class="n">partitionInfo</span><span class="o">.</span><span class="na">addPartition</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">brokerForPartition1</span><span class="o">);</span><span class="c1">//mapping from partition 1 to brokerForPartition1</span>
+    <span class="n">partitionInfo</span><span class="o">.</span><span class="na">addPartition</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="n">brokerForPartition2</span><span class="o">);</span><span class="c1">//mapping from partition 2 to brokerForPartition2</span>
+    <span class="n">StaticHosts</span> <span class="n">hosts</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StaticHosts</span><span class="o">(</span><span class="n">partitionInfo</span><span class="o">);</span>
+</code></pre></div>
+<h3 id="kafkaconfig">KafkaConfig</h3>
+
+<p>kafkaSpoutを構築するために必要なもう一つは、KafkaConfigのインスタンスです。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="nf">KafkaConfig</span><span class="o">(</span><span class="n">BrokerHosts</span> <span class="n">hosts</span><span class="o">,</span> <span class="n">String</span> <span class="n">topic</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nf">KafkaConfig</span><span class="o">(</span><span class="n">BrokerHosts</span> <span class="n">hosts</span><span class="o">,</span> <span class="n">String</span> <span class="n">topic</span><span class="o">,</span> <span class="n">String</span> <span class="n">clientId</span><span class="o">)</span>
+</code></pre></div>
+<p>BrokerHostsは、上記のようにBrokerHostsインターフェイスの実装にすることができます。topicはKafkaにおけるトピック名です。
+オプションのClientIdは、Spoutの現在のコンシュームしたオフセットが格納されているZooKeeperパスの一部として使用されます。</p>
+
+<p>現在使用されているKafkaConfigには2つの拡張機能があります。</p>
+
+<p>Spoutconfigは、KafkaConfigの拡張で、ZooKeeper接続情報を持つ追加のフィールドをサポートし、KafkaSpout固有の動作を制御します。
+Zkrootは、コンシューマのオフセットを格納するためのルートとして使用されます。idは、あなたのSpoutを一意に識別する必要があります。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="nf">SpoutConfig</span><span class="o">(</span><span class="n">BrokerHosts</span> <span class="n">hosts</span><span class="o">,</span> <span class="n">String</span> <span class="n">topic</span><span class="o">,</span> <span class="n">String</span> <span class="n">zkRoot</span><span class="o">,</span> <span class="n">String</span> <span class="n">id</span><span class="o">);</span>
+<span class="kd">public</span> <span class="nf">SpoutConfig</span><span class="o">(</span><span class="n">BrokerHosts</span> <span class="n">hosts</span><span class="o">,</span> <span class="n">String</span> <span class="n">topic</span><span class="o">,</span> <span class="n">String</span> <span class="n">id</span><span class="o">);</span>
+</code></pre></div>
+<p>これらのパラメータに加えて、SpoutConfigには、KafkaSpoutの動作を制御する次のフィールドが含まれています:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="c1">// setting for how often to save the current Kafka offset to ZooKeeper</span>
+    <span class="kd">public</span> <span class="kt">long</span> <span class="n">stateUpdateIntervalMs</span> <span class="o">=</span> <span class="mi">2000</span><span class="o">;</span>
+
+    <span class="c1">// Exponential back-off retry settings.  These are used when retrying messages after a bolt</span>
+    <span class="c1">// calls OutputCollector.fail().</span>
+    <span class="c1">// Note: be sure to set org.apache.storm.Config.MESSAGE_TIMEOUT_SECS appropriately to prevent</span>
+    <span class="c1">// resubmitting the message while still retrying.</span>
+    <span class="kd">public</span> <span class="kt">long</span> <span class="n">retryInitialDelayMs</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">double</span> <span class="n">retryDelayMultiplier</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">long</span> <span class="n">retryDelayMaxMs</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">;</span>
+
+    <span class="c1">// if set to true, spout will set Kafka topic as the emitted Stream ID</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">topicAsStreamId</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</code></pre></div>
+<p>コアであるKafkaSpoutはSpoutConfigのインスタンスのみを受け入れます。</p>
+
+<p>TridentKafkaConfigはKafkaConfigのもう一つの拡張です。
+TridentKafkaEmitterはTridentKafkaConfigのみを受け入れます。</p>
+
+<p>KafkaConfigクラスには、アプリケーションの動作を制御するパブリック変数があります。ここにデフォルトがあります:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="kt">int</span> <span class="n">fetchSizeBytes</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">socketTimeoutMs</span> <span class="o">=</span> <span class="mi">10000</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">fetchMaxWait</span> <span class="o">=</span> <span class="mi">10000</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">bufferSizeBytes</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">MultiScheme</span> <span class="n">scheme</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RawMultiScheme</span><span class="o">();</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">ignoreZkOffsets</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">long</span> <span class="n">startOffsetTime</span> <span class="o">=</span> <span class="n">kafka</span><span class="o">.</span><span class="na">api</span><span class="o">.</span><span class="na">OffsetRequest</span><span class="o">.</span><span class="na">EarliestTime</span><span class="o">();</span>
+    <span class="kd">public</span> <span class="kt">long</span> <span class="n">maxOffsetBehind</span> <span class="o">=</span> <span class="n">Long</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">useStartOffsetTimeIfOffsetOutOfRange</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">metricsTimeBucketSizeInSecs</span> <span class="o">=</span> <span class="mi">60</span><span class="o">;</span>
+</code></pre></div>
+<p>それらのほとんどは、MultiSchemeを除いて自明であると思います。</p>
+
+<h3 id="multischeme">MultiScheme</h3>
+
+<p>MultiSchemeは、Kafkaからコンシュームされたバイト配列がどのようにStormのタプルに変換されるかを指示するインタフェースです。
+また、出力フィールドの命名も制御します。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">  <span class="kd">public</span> <span class="n">Iterable</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;&gt;</span> <span class="nf">deserialize</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">ser</span><span class="o">);</span>
+  <span class="kd">public</span> <span class="n">Fields</span> <span class="nf">getOutputFields</span><span class="o">();</span>
+</code></pre></div>
+<p>デフォルトの<code>RawMultiScheme</code>は単に<code>byte[]</code>をとり、<code>byte[]</code>をそのままタプルとして返します。 outputFieldの名前は&quot;bytes&quot;です。
+<code>SchemeAsMultiScheme</code>や<code>KeyValueSchemeAsMultiScheme</code>のような別の実装があります。これは<code>byte[]</code>を<code>String</code>に変換することができます。</p>
+
+<h3 id="examples">Examples</h3>
+
+<h4 id="core-spout">Core Spout</h4>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">BrokerHosts</span> <span class="n">hosts</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ZkHosts</span><span class="o">(</span><span class="n">zkConnString</span><span class="o">);</span>
+<span class="n">SpoutConfig</span> <span class="n">spoutConfig</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SpoutConfig</span><span class="o">(</span><span class="n">hosts</span><span class="o">,</span> <span class="n">topicName</span><span class="o">,</span> <span class="s">"/"</span> <span class="o">+</span> <span class="n">topicName</span><span class="o">,</span> <span class="n">UUID</span><span class="o">.</span><span class="na">randomUUID</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+<span class="n">spoutConfig</span><span class="o">.</span><span class="na">scheme</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SchemeAsMultiScheme</span><span class="o">(</span><span class="k">new</span> <span class="n">StringScheme</span><span class="o">());</span>
+<span class="n">KafkaSpout</span> <span class="n">kafkaSpout</span> <span class="o">=</span> <span class="k">new</span> <span class="n">KafkaSpout</span><span class="o">(</span><span class="n">spoutConfig</span><span class="o">);</span>
+</code></pre></div>
+<h4 id="trident-spout">Trident Spout</h4>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">TridentTopology</span> <span class="n">topology</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TridentTopology</span><span class="o">();</span>
+<span class="n">BrokerHosts</span> <span class="n">zk</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ZkHosts</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">);</span>
+<span class="n">TridentKafkaConfig</span> <span class="n">spoutConf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TridentKafkaConfig</span><span class="o">(</span><span class="n">zk</span><span class="o">,</span> <span class="s">"test-topic"</span><span class="o">);</span>
+<span class="n">spoutConf</span><span class="o">.</span><span class="na">scheme</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SchemeAsMultiScheme</span><span class="o">(</span><span class="k">new</span> <span class="n">StringScheme</span><span class="o">());</span>
+<span class="n">OpaqueTridentKafkaSpout</span> <span class="n">spout</span> <span class="o">=</span> <span class="k">new</span> <span class="n">OpaqueTridentKafkaSpout</span><span class="o">(</span><span class="n">spoutConf</span><span class="o">);</span>
+</code></pre></div>
+<h3 id="how-kafkaspout-stores-offsets-of-a-kafka-topic-and-recovers-in-case-of-failures">How KafkaSpout stores offsets of a Kafka topic and recovers in case of failures</h3>
+
+<p>上記のKafkaConfigプロパティに示されているように、KafkaトピックのどこからSpoutが開始するかを制御するには、
+<code>KafkaConfig.startOffsetTime</code>を以下のように設定します:</p>
+
+<ol>
+<li><code>kafka.api.OffsetRequest.EarliestTime()</code>: トピックの先頭から（つまり、最も古いメッセージから）読み込みます。</li>
+<li><code>kafka.api.OffsetRequest.LatestTime()</code>: トピックの最後から読み込みます（つまり、トピックに書き込まれているなんらかの新しいメッセージ）</li>
+<li>エポックを基準としているUnixタイムスタンプ(例えば、<code>System.currentTimeMillis()</code>を介して):
+KafkaのFAQにある<a href="https://cwiki.apache.org/confluence/display/KAFKA/FAQ#FAQ-HowdoIaccuratelygetoffsetsofmessagesforacertaintimestampusingOffsetRequest?">OffsetRequestを使用して特定のタイムスタンプのメッセージの正確なオフセットを取得するにはどうすればよいですか?</a>を参照してください。</li>
+</ol>
+
+<p>トポロジが実行されると、KafkaSpoutは、状態情報をZooKeeperパスの<code>SpoutConfig.zkRoot+ &quot;/&quot; + SpoutConfig.id</code>配下に保存することによって、読み取りや送出したオフセットを追跡します。障害が発生した場合は、ZooKeeperで最後に書き込まれたオフセットから回復します。</p>
+
+<blockquote>
+<p><strong>Important:</strong>  トポロジを再配備するときは、<code>SpoutConfig.zkRoot</code>と<code>SpoutConfig.id</code>の設定が変更されていないことを確認してください。
+そうでなければ、Spoutは以前のコンシューマ状態情報(オフセットなど)をZooKeeperから読み込むことができません。
+-- これは、ユースケースによりますが、予期しない動作やデータの消失につながる可能性があります。</p>
+</blockquote>
+
+<p>これは、トポロジがいったん実行されれば、トポロジはZooKeeperのコンシューマ状態情報(オフセット)に依存して読み込みを開始 (より正確にはレジューム)する必要がある場所を決定するため、<code>KafkaConfig.startOffsetTime</code>の設定はトポロジーのその後の実行に影響しないことを意味します。
+SpoutがZooKeeperに保存されているどのコンシューマの状態情報をも無視するよう強制したい場合は、パラメータ<code>KafkaConfig.ignoreZkOffsets</code>を<code>true</code>に設定する必要があります。
+<code>true</code>の場合、Spoutは常に前述のように<code>KafkaConfig.startOffsetTime</code>で定義されたオフセットからの読み込みを開始します。</p>
+
+<h2 id="using-storm-kafka-with-different-versions-of-scala">Using storm-kafka with different versions of Scala</h2>
+
+<p>Storm-kafkaのKafkaに対する依存関係は、Mavenの<code>provided</code>スコープとして定義されています。つまり、推移的依存関係として引き込まれません。
+これにより、特定のScalaバージョンに対してビルドされたKafkaのバージョンを使用することができます。</p>
+
+<p>storm-kafkaでプロジェクトをビルドするときは、Kafkaの依存関係を明示的に追加する必要があります。
+たとえば、Scala 2.10に対してビルドされたKafka 0.8.1.1を使用するには、<code>pom.xml</code>に次の依存関係を使用します:</p>
+<div class="highlight"><pre><code class="language-xml" data-lang="xml">        <span class="nt">&lt;dependency&gt;</span>
+            <span class="nt">&lt;groupId&gt;</span>org.apache.kafka<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>kafka_2.10<span class="nt">&lt;/artifactId&gt;</span>
+            <span class="nt">&lt;version&gt;</span>0.8.1.1<span class="nt">&lt;/version&gt;</span>
+            <span class="nt">&lt;exclusions&gt;</span>
+                <span class="nt">&lt;exclusion&gt;</span>
+                    <span class="nt">&lt;groupId&gt;</span>org.apache.zookeeper<span class="nt">&lt;/groupId&gt;</span>
+                    <span class="nt">&lt;artifactId&gt;</span>zookeeper<span class="nt">&lt;/artifactId&gt;</span>
+                <span class="nt">&lt;/exclusion&gt;</span>
+                <span class="nt">&lt;exclusion&gt;</span>
+                    <span class="nt">&lt;groupId&gt;</span>log4j<span class="nt">&lt;/groupId&gt;</span>
+                    <span class="nt">&lt;artifactId&gt;</span>log4j<span class="nt">&lt;/artifactId&gt;</span>
+                <span class="nt">&lt;/exclusion&gt;</span>
+            <span class="nt">&lt;/exclusions&gt;</span>
+        <span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div>
+<p>ZooKeeperとlog4jに対する依存関係は、Stormの依存関係とのバージョンの競合を防ぐためにexcludeされています。</p>
+
+<h2 id="writing-to-kafka-as-part-of-your-topology">Writing to Kafka as part of your topology</h2>
+
+<p>org.apache.storm.kafka.bolt.KafkaBoltのインスタンスを生成し、コンポーネントとしてトポロジにアタッチすることもできます。
+トライデントを使用している場合は、org.apache.storm.kafka.trident.TridentState, org.apache.storm.kafka.trident.TridentStateFactoryおよびorg.apache.storm.kafka.trident.TridentKafkaUpdaterを使ってください。</p>
+
+<p>次の2つのインターフェイスの実装を提供する必要があります</p>
+
+<h3 id="tupletokafkamapper-and-tridenttupletokafkamapper">TupleToKafkaMapper and TridentTupleToKafkaMapper</h3>
+
+<p>これらのインタフェースには2つのメソッドが定義されています:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">    <span class="n">K</span> <span class="nf">getKeyFromTuple</span><span class="o">(</span><span class="n">Tuple</span><span class="o">/</span><span class="n">TridentTuple</span> <span class="n">tuple</span><span class="o">);</span>
+    <span class="n">V</span> <span class="nf">getMessageFromTuple</span><span class="o">(</span><span class="n">Tuple</span><span class="o">/</span><span class="n">TridentTuple</span> <span class="n">tuple</span><span class="o">);</span>
+</code></pre></div>
+<p>名前が示すように、これらのメソッドは、タプルをKafkaのkeyとmessageに対応付けするために呼び出されます。
+単に1つのフィールドをキーとして、1つのフィールドを値として使用する場合は、提供されているFieldNameBasedTupleToKafkaMapper.javaの実装を使用できます。
+KafkaBoltでは、後方互換性の理由から、デフォルトのコンストラクタを使用してFieldNameBasedTupleToKafkaMapperを構築する場合、実装は常にフィールド名が&quot;key&quot;と&quot;message&quot;であるフィールドを探します。
+また、デフォルト以外のコンストラクタを使用して、異なるキーとメッセージフィールドを指定することもできます
+TridentKafkaStateでは、デフォルトコンストラクタがないため、keyとmessageのフィールド名を指定する必要があります。
+これらは、FieldNameBasedTupleToKafkaMapperの生成時に指定する必要があります。</p>
+
+<h3 id="kafkatopicselector-and-trident-kafkatopicselector">KafkaTopicSelector and trident KafkaTopicSelector</h3>
+
+<p>このインタフェースには1つのメソッドしかありません</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">KafkaTopicSelector</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="nf">getTopics</span><span class="o">(</span><span class="n">Tuple</span><span class="o">/</span><span class="n">TridentTuple</span> <span class="n">tuple</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>このインタフェースの実装は、パブリッシュされるトピックとタプルのkey/messageの対応付けを返す必要があります
+nullを返すことができ、メッセージは無視されます。1つの静的トピック名がある場合、DefaultTopicSelector.javaを使用して、コンストラクタ内でトピックの名前を設定できます。</p>
+
+<h3 id="specifying-kafka-producer-properties">Specifying Kafka producer properties</h3>
+
+<p>Stormトポロジの設定で、キーのkafka.broker.propertiesを使用してプロパティのマップを設定することによって、すべてのプロダクションプロパティを提供できます(「プロデューサの重要なコンフィグレーションプロパティ」 <a href="http://kafka.apache.org/documentation.html#producerconfigs">http://kafka.apache.org/documentation.html#producerconfigs</a> を参照)。</p>
+
+<h3 id="putting-it-all-together">Putting it all together</h3>
+
+<p>Boltについて:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">        <span class="n">TopologyBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TopologyBuilder</span><span class="o">();</span>
+
+        <span class="n">Fields</span> <span class="n">fields</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"key"</span><span class="o">,</span> <span class="s">"message"</span><span class="o">);</span>
+        <span class="n">FixedBatchSpout</span> <span class="n">spout</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FixedBatchSpout</span><span class="o">(</span><span class="n">fields</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span>
+                    <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"storm"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">),</span>
+                    <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"trident"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">),</span>
+                    <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"needs"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">),</span>
+                    <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"javadoc"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">)</span>
+        <span class="o">);</span>
+        <span class="n">spout</span><span class="o">.</span><span class="na">setCycle</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="n">builder</span><span class="o">.</span><span class="na">setSpout</span><span class="o">(</span><span class="s">"spout"</span><span class="o">,</span> <span class="n">spout</span><span class="o">,</span> <span class="mi">5</span><span class="o">);</span>
+        <span class="n">KafkaBolt</span> <span class="n">bolt</span> <span class="o">=</span> <span class="k">new</span> <span class="n">KafkaBolt</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">withTopicSelector</span><span class="o">(</span><span class="k">new</span> <span class="n">DefaultTopicSelector</span><span class="o">(</span><span class="s">"test"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">withTupleToKafkaMapper</span><span class="o">(</span><span class="k">new</span> <span class="n">FieldNameBasedTupleToKafkaMapper</span><span class="o">());</span>
+        <span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"forwardToKafka"</span><span class="o">,</span> <span class="n">bolt</span><span class="o">,</span> <span class="mi">8</span><span class="o">).</span><span class="na">shuffleGrouping</span><span class="o">(</span><span class="s">"spout"</span><span class="o">);</span>
+
+        <span class="n">Config</span> <span class="n">conf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Config</span><span class="o">();</span>
+        <span class="c1">//set producer properties.</span>
+        <span class="n">Properties</span> <span class="n">props</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Properties</span><span class="o">();</span>
+        <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"metadata.broker.list"</span><span class="o">,</span> <span class="s">"localhost:9092"</span><span class="o">);</span>
+        <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"request.required.acks"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">);</span>
+        <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"serializer.class"</span><span class="o">,</span> <span class="s">"kafka.serializer.StringEncoder"</span><span class="o">);</span>
+        <span class="n">conf</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">KafkaBolt</span><span class="o">.</span><span class="na">KAFKA_BROKER_PROPERTIES</span><span class="o">,</span> <span class="n">props</span><span class="o">);</span>
+
+        <span class="n">StormSubmitter</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span><span class="s">"kafkaboltTest"</span><span class="o">,</span> <span class="n">conf</span><span class="o">,</span> <span class="n">builder</span><span class="o">.</span><span class="na">createTopology</span><span class="o">());</span>
+</code></pre></div>
+<p>Tridentでは:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java">        <span class="n">Fields</span> <span class="n">fields</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"word"</span><span class="o">,</span> <span class="s">"count"</span><span class="o">);</span>
+        <span class="n">FixedBatchSpout</span> <span class="n">spout</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FixedBatchSpout</span><span class="o">(</span><span class="n">fields</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span>
+                <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"storm"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">),</span>
+                <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"trident"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">),</span>
+                <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"needs"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">),</span>
+                <span class="k">new</span> <span class="nf">Values</span><span class="o">(</span><span class="s">"javadoc"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">)</span>
+        <span class="o">);</span>
+        <span class="n">spout</span><span class="o">.</span><span class="na">setCycle</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+
+        <span class="n">TridentTopology</span> <span class="n">topology</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TridentTopology</span><span class="o">();</span>
+        <span class="n">Stream</span> <span class="n">stream</span> <span class="o">=</span> <span class="n">topology</span><span class="o">.</span><span class="na">newStream</span><span class="o">(</span><span class="s">"spout1"</span><span class="o">,</span> <span class="n">spout</span><span class="o">);</span>
+
+        <span class="n">TridentKafkaStateFactory</span> <span class="n">stateFactory</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TridentKafkaStateFactory</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">withKafkaTopicSelector</span><span class="o">(</span><span class="k">new</span> <span class="n">DefaultTopicSelector</span><span class="o">(</span><span class="s">"test"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">withTridentTupleToKafkaMapper</span><span class="o">(</span><span class="k">new</span> <span class="n">FieldNameBasedTupleToKafkaMapper</span><span class="o">(</span><span class="s">"word"</span><span class="o">,</span> <span class="s">"count"</span><span class="o">));</span>
+        <span class="n">stream</span><span class="o">.</span><span class="na">partitionPersist</span><span class="o">(</span><span class="n">stateFactory</span><span class="o">,</span> <span class="n">fields</span><span class="o">,</span> <span class="k">new</span> <span class="n">TridentKafkaUpdater</span><span class="o">(),</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">());</span>
+
+        <span class="n">Config</span> <span class="n">conf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Config</span><span class="o">();</span>
+        <span class="c1">//set producer properties.</span>
+        <span class="n">Properties</span> <span class="n">props</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Properties</span><span class="o">();</span>
+        <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"metadata.broker.list"</span><span class="o">,</span> <span class="s">"localhost:9092"</span><span class="o">);</span>
+        <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"request.required.acks"</span><span class="o">,</span> <span class="s">"1"</span><span class="o">);</span>
+        <span class="n">props</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"serializer.class"</span><span class="o">,</span> <span class="s">"kafka.serializer.StringEncoder"</span><span class="o">);</span>
+        <span class="n">conf</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">TridentKafkaState</span><span class="o">.</span><span class="na">KAFKA_BROKER_PROPERTIES</span><span class="o">,</span> <span class="n">props</span><span class="o">);</span>
+        <span class="n">StormSubmitter</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span><span class="s">"kafkaTridentTest"</span><span class="o">,</span> <span class="n">conf</span><span class="o">,</span> <span class="n">topology</span><span class="o">.</span><span class="na">build</span><span class="o">());</span>
+</code></pre></div>
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

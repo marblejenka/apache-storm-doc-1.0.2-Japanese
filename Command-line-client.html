@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Command Line Client</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Command Line Client</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>このページでは、 &quot;storm&quot;コマンドラインクライアントで可能なすべてのコマンドについて説明します。&quot;storm&quot;クライアントを設定してリモートクラスタと通信する方法については、<a href="Setting-up-development-environment.html">Setting up development environment</a>）の指示に従ってください。</p>
+
+<p>コマンドは次のとおりです:</p>
+
+<ol>
+<li>jar</li>
+<li>kill</li>
+<li>activate</li>
+<li>deactivate</li>
+<li>rebalance</li>
+<li>repl</li>
+<li>classpath</li>
+<li>localconfvalue</li>
+<li>remoteconfvalue</li>
+<li>nimbus</li>
+<li>supervisor</li>
+<li>ui</li>
+<li>drpc</li>
+<li>blobstore</li>
+<li>dev-zookeeper</li>
+<li>get-errors</li>
+<li>heartbeats</li>
+<li>kill_workers</li>
+<li>list</li>
+<li>logviewer</li>
+<li>monitor</li>
+<li>node-health-check</li>
+<li>pacemaker</li>
+<li>set_log_level</li>
+<li>shell</li>
+<li>sql</li>
+<li>upload-credentials</li>
+<li>version</li>
+<li>help</li>
+</ol>
+
+<h3 id="jar">jar</h3>
+
+<p>Syntax: <code>storm jar topology-jar-path class ...</code></p>
+
+<p>引数に指定された<code>class</code>のmainメソッドを実行します。<code>〜/ .storm</code>にあるStormのjarと設定はクラスパスに置かれます。このプロセスは、トポロジをsubmitする際に、その設定を使用して<a href="javadocs/org/apache/storm/StormSubmitter.html">StormSubmitter</a>は<code>topology-jar-path</code>にあるjarをアップロードします。</p>
+
+<h3 id="kill">kill</h3>
+
+<p>Syntax: <code>storm kill topology-name [-w wait-time-secs]</code></p>
+
+<p>名前が<code>topology-name</code>であるトポロジを終了させます。Stormはまず、トポロジのメッセージがタイムアウトになるまでトポロジのスパウトを無効にして、現在処理中のすべてのメッセージの処理が完了するようにします。Stormはワーカーをシャットダウンし、実行状態をクリーンアップします。無効化からシャットダウンまでStormが待機する時間の長さを、-wフラグを使用して上書きできます。</p>
+
+<h3 id="activate">activate</h3>
+
+<p>Syntax: <code>storm activate topology-name</code></p>
+
+<p>指定されたトポロジのSpoutを有効化します。</p>
+
+<h3 id="deactivate">deactivate</h3>
+
+<p>Syntax: <code>storm deactivate topology-name</code></p>
+
+<p>指定されたトポロジのSpoutを無効化します。</p>
+
+<h3 id="rebalance">rebalance</h3>
+
+<p>Syntax: <code>storm rebalance topology-name [-w wait-time-secs] [-n new-num-workers] [-e component=parallelism]*</code></p>
+
+<p>トポロジのワーカーが実行されている場所を広げたい場合があります。たとえば、ノードごとに4つのワーカー実行する10ノードのクラスタがあるとし、さらに10ノードをクラスタに追加するとします。各ノードが2つのワーカーを実行するように、Stormは実行中のトポロジを分配することができます。これを行うための1つの方法は、トポロジーを終了して再送信することですが、Stormはこれを行う簡単な方法であるる&quot;rebalance&quot;コマンドを提供します。</p>
+
+<p>リバランスでは、まず、メッセージタイムアウトの期間（-wフラグで上書き可能）だけトポロジを無効にしてから、ワーカーをクラスタ全体に均等に再分配します。その後、トポロジは以前の有効な状態に戻ります（無効化されていたトポロジは無効化されたままで、有効化されていたトポロジは有効な状態に戻ります）。</p>
+
+<p>また、rebalanceコマンドを使用して、実行中のトポロジーのparallelismを変更することもできます。-nおよび-eスイッチを使用して、コンポーネントのワーカー数またはエグゼキュータの数をそれぞれ変更します。</p>
+
+<h3 id="repl">repl</h3>
+
+<p>Syntax: <code>storm repl</code></p>
+
+<p>クラスパス上のStormのjarと設定を使用して、Clojure REPLを開きます。デバッグに便利です。</p>
+
+<h3 id="classpath">classpath</h3>
+
+<p>Syntax: <code>storm classpath</code></p>
+
+<p>コマンドを実行するときにStormのクライアントが使用するクラスパスを出力します。</p>
+
+<h3 id="localconfvalue">localconfvalue</h3>
+
+<p>Syntax: <code>storm localconfvalue conf-name</code></p>
+
+<p>ローカルにおけるStormの設定で、<code>conf-name</code>の値を表示します。ローカルのStormの設定は、<code>~/.storm/storm.yaml</code>の設定が<code>defaults.yaml</code>の設定とマージされたものです。</p>
+
+<h3 id="remoteconfvalue">remoteconfvalue</h3>
+
+<p>Syntax: <code>storm remoteconfvalue conf-name</code></p>
+
+<p>クラスタにおけるStormの設定で、<code>conf-name</code>の値を表示します。クラスタのStormの設定は<code>$STORM-PATH/conf/storm.yaml</code>にあるもので、<code>defaults.yaml</code>の設定とマージされています。 このコマンドは、クラスタマシン上で実行する必要があります。</p>
+
+<h3 id="nimbus">nimbus</h3>
+
+<p>Syntax: <code>storm nimbus</code></p>
+
+<p>Nimbusデーモンを起動します。このコマンドは、<a href="http://cr.yp.to/daemontools.html">daemontools</a>や<a href="http://mmonit.com/monit/">monit</a>のようなツールの監視下で実行する必要があります。詳細は、<a href="Setting-up-a-Storm-cluster.html">Storm clusterの設定</a>を参照してください。</p>
+
+<h3 id="supervisor">supervisor</h3>
+
+<p>Syntax: <code>storm supervisor</code></p>
+
+<p>Supervisorデーモンを起動します。このコマンドは、<a href="http://cr.yp.to/daemontools.html">daemontools</a>や<a href="http://mmonit.com/monit/">monit</a>のようなツールの監視下で実行する必要があります。詳細は、<a href="Setting-up-a-Storm-cluster.html">Storm clusterの設定</a>を参照してください。</p>
+
+<h3 id="ui">ui</h3>
+
+<p>Syntax: <code>storm ui</code></p>
+
+<p>UIデーモンを起動します。UIはStormクラスタのWebインターフェイスを提供し、トポロジの実行に関する詳細な統計情報を表示します。このコマンドは、<a href="http://cr.yp.to/daemontools.html">daemontools</a>や<a href="http://mmonit.com/monit/">monit</a>のようなツールの監視下で実行する必要があります。詳細は、<a href="Setting-up-a-Storm-cluster.html">Storm clusterの設定</a>を参照してください。</p>
+
+<h3 id="drpc">drpc</h3>
+
+<p>Syntax: <code>storm drpc</code></p>
+
+<p>DRPCデーモンを起動します。 このコマンドは、<a href="http://cr.yp.to/daemontools.html">daemontools</a>や<a href="http://mmonit.com/monit/">monit</a>のようなツールの監視下で実行する必要があります。詳細は、<a href="Setting-up-a-Storm-cluster.html">Storm clusterの設定</a>を参照してください。</p>
+
+<h3 id="blobstore">blobstore</h3>
+
+<p>Syntax: <code>storm  cmd</code></p>
+
+<p>list [KEY...] - blobに現在あるblobをリストします</p>
+
+<p>cat [-f FILE] KEY - blobを読み込み、それをファイルに書き込むか、STDOUT（読み込みアクセスが必要です）のいずれかに書き込みます。</p>
+
+<p>create [-f FILE] [-a ACL ...] [--replication-factor NUMBER] KEY - 新しいblobを作成します。内容はFI​​LEまたはSTDINから与えられます。ACLは[uo]:[username]:[r-][w-][a-]の形式でカンマ区切りリストにすることができます。</p>
+
+<p>update [-f FILE] KEY - blobの内容を更新します。内容はFI​​LEまたはSTDINから与えられます（書き込みアクセスが必要です）。</p>
+
+<p>delete KEY - blobstoreからエントリを削除します（書き込みアクセスが必要です）。</p>
+
+<p>set-acl [-s ACL] KEY - ACLの形式は[uo]:[username]:[r-][w-][a-]で、コンマ区切りリスト（管理者アクセスが必要）です。</p>
+
+<p>replication --read KEY - blobのreplication factorを読み取るために使用されます。</p>
+
+<p>replication --update --replication-factor NUMBER KEY - ここで、NUMBER&gt;0です。これは、blobのreplication factorを更新するために使用されます。</p>
+
+<p>たとえば、次の例では、data.tgzに格納されたデータを使用してmytopo:data.tgzキーを作成します。ユーザーaliceはフルアクセス権を持ち、bobは読み取り/書き込みアクセス権を持ち、他のすべてのユーザーは読み取りアクセス権を持ちます。</p>
+
+<p>storm blobstore create mytopo:data.tgz -f data.tgz -a u:alice:rwa,u:bob:rw,o::r</p>
+
+<p>詳細については、<a href="distcache-blobstore.html">Blobstore(Distcahce)</a>を参照してください。</p>
+
+<h3 id="dev-zookeeper">dev-zookeeper</h3>
+
+<p>Syntax: <code>storm dev-zookeeper</code></p>
+
+<p>&quot;dev.zookeeper.path&quot;をローカルディレクトリとして、&quot;storm.zookeeper.port&quot;をポートとして使用して、新しいZookeeperサーバーを起動します。これは開発/テストのみを目的としており、起動したZookeeperインスタンスは本番環境で使用するように構成されていません。</p>
+
+<h3 id="get-errors">get-errors</h3>
+
+<p>Syntax: <code>storm get-errors topology-name</code></p>
+
+<p>実行中のトポロジから最新のエラーを取得します。返される結果には、コンポーネント名のキー値のペアならびにエラーのあるコンポーネントのエラーが含まれます。結果はjson形式で返されます。</p>
+
+<h3 id="heartbeats">heartbeats</h3>
+
+<p>Syntax: <code>storm heartbeats [cmd]</code></p>
+
+<p>list PATH - ClusterStateに現在あるPATHのheartbeats nodesを一覧表示します。
+get  PATH - PATHにあるheartbeat dataを取得します</p>
+
+<h3 id="kill_workers">kill_workers</h3>
+
+<p>Syntax: <code>storm kill_workers</code></p>
+
+<p>このsupervisorで動作するワーカーを停止させます。このコマンドは、supervisorノードで実行する必要があります。クラスタがセキュアモードで実行されている場合、すべてのワーカーを正常に終了させるためには、ノードに対する管理者権限が必要です。</p>
+
+<h3 id="list">list</h3>
+
+<p>Syntax: <code>storm list</code></p>
+
+<p>実行中のトポロジとその状態を一覧表示します。</p>
+
+<h3 id="logviewer">logviewer</h3>
+
+<p>Syntax: <code>storm logviewer</code></p>
+
+<p>log viewerデーモンを起動します。これは、Stormのログファイルを表示するためのWebインターフェイスを提供します。このコマンドは、daemontoolsやmonitのようなツールを使って監視下で実行する必要があります。</p>
+
+<p>詳細については、Stormクラスタの設定を参照してください（<a href="http://storm.apache.org/documentation/Setting-up-a-Storm-cluster%EF%BC%89%E3%80%82">http://storm.apache.org/documentation/Setting-up-a-Storm-cluster）。</a></p>
+
+<h3 id="monitor">monitor</h3>
+
+<p>Syntax: <code>storm monitor topology-name [-i interval-secs] [-m component-id] [-s stream-id] [-w [emitted | transferred]]</code></p>
+
+<p>トポロジのスループットをインタラクティブに監視します。
+poll-interval, component-id, stream-id, watch-item[emitted | transferred]を指定できます。
+  デフォルトでは、
+    poll-intervalは4秒です;
+    すべてのコンポーネントIDがリストとして渡されます;
+    stream-id は &#39;default&#39;;
+    watch-item は &#39;emitted&#39;;</p>
+
+<h3 id="node-health-check">node-health-check</h3>
+
+<p>Syntax: <code>storm node-health-check</code></p>
+
+<p>ローカルにあるsupervisorにヘルスチェックを実行します。</p>
+
+<h3 id="pacemaker">pacemaker</h3>
+
+<p>Syntax: <code>storm pacemaker</code></p>
+
+<p>Pacemakerデーモンを起動します。このコマンドは、daemontoolsやmonitのようなツールを使って監視下で実行する必要があります。</p>
+
+<p>詳細については、Stormクラスタの設定を参照してください（<a href="http://storm.apache.org/documentation/Setting-up-a-Storm-cluster%EF%BC%89%E3%80%82">http://storm.apache.org/documentation/Setting-up-a-Storm-cluster）。</a></p>
+
+<h3 id="set_log_level">set_log_level</h3>
+
+<p>Syntax: <code>storm set_log_level -l [logger name]=[log level][:optional timeout] -r [logger name] topology-name</code></p>
+
+<p>トポロジのログレベルを動的に変更します</p>
+
+<p>ログレベルはALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFFのいずれかです</p>
+
+<p>e.g.
+  ./bin/storm set_log_level -l ROOT=DEBUG:30 topology-name</p>
+
+<p>ルートロガーのレベルを30秒間DEBUGに設定する</p>
+
+<p>./bin/storm set_log_level -l com.myapp=WARN topology-name</p>
+
+<p>com.myappロガーのレベルをWARNに30秒間設定する</p>
+
+<p>./bin/storm set_log_level -l com.myapp=WARN -l com.myOtherLogger=ERROR:123 topology-name</p>
+
+<p>com.myappロガーのレベルをWARNに設定し、com.myOtherLoggerをERRORに123秒間設定します</p>
+
+<p>./bin/storm set_log_level -r com.myOtherLogger topology-name</p>
+
+<p>設定を消去し、元のレベルに戻します</p>
+
+<h3 id="shell">shell</h3>
+
+<p>Syntax: <code>storm shell resourcesdir command args</code></p>
+
+<p>非JVM言語を使用するためにjarを構築し、Nimbusにアップロードします</p>
+
+<p>eg: <code>storm shell resources/ python topology.py arg1 arg2</code></p>
+
+<h3 id="sql">sql</h3>
+
+<p>Syntax: <code>storm sql sql-file topology-name</code></p>
+
+<p>SQL文をTridentトポロジにコンパイルし、Stormに送信します。</p>
+
+<h3 id="upload-credentials">upload-credentials</h3>
+
+<p>Syntax: <code>storm upload_credentials topology-name [credkey credvalue]*</code></p>
+
+<p>実行中のトポロジに新しいcredentialの集合をアップロードします。</p>
+
+<h3 id="version">version</h3>
+
+<p>Syntax: <code>storm version</code></p>
+
+<p>実行するStormリリースのバージョン番号を表示します。</p>
+
+<h3 id="help">help</h3>
+
+<p>Syntax: <code>storm help [command]</code></p>
+
+<p>指定されたコマンドのヘルプメッセージまたは利用可能なコマンドのリストを表示する</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

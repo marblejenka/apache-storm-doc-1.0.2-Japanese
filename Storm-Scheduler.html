@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Scheduler</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Scheduler</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>Stormには4種類の組み込みスケジューラがあります: <a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/scheduler/DefaultScheduler.clj">DefaultScheduler</a>, <a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/scheduler/IsolationScheduler.clj">IsolationScheduler</a>, <a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/scheduler/multitenant/MultitenantScheduler.java">MultitenantScheduler</a>, <a href="Resource_Aware_Scheduler_overview.html">ResourceAwareScheduler</a>. </p>
+
+<h2 id="pluggable-scheduler">Pluggable scheduler</h2>
+
+<p>エグゼキュータをワーカーに割り当てるために、独自のスケジューラを実装してデフォルトのスケジューラを置き換えることができます。storm.yamlで&quot;storm.scheduler&quot;に使用したいクラスを設定します。また、スケジューラは<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/scheduler/IScheduler.java">IScheduler</a>インターフェイスを実装する必要があります。</p>
+
+<h2 id="isolation-scheduler">Isolation Scheduler</h2>
+
+<p>Isolation Schedulerを使用すると、多くのトポロジ間でクラスタを簡単かつ安全に共有できます。Isolation Schedulerでは「隔離」すべきトポロジを指定します。つまり、隔離されたトポロジは他のトポロジが実行されていないクラスタ内の専用マシン上で実行されます。これらの隔離されたトポロジはクラスタ上で優先されるため、隔離されていないトポロジと競合する場合はリソースが隔離されたトポロジに割り当てられ、隔離トポロジがリソースを取得する場合は非隔離トポロジの分から取得します。すべての隔離トポロジが割り当てられると、クラスタ上の残りのマシンはすべての非隔離トポロジで共有されます。</p>
+
+<p>Isolation Schedulerを設定するには、Nimbusの&quot;storm.scheduler&quot;を&quot;org.apache.storm.scheduler.IsolationScheduler&quot;に設定します。次に、&quot;isolation.scheduler.machines&quot;設定を使用して、各トポロジが取得できるマシンの数を指定します。この設定は、トポロジ名とトポロジに割り当てられた独立したマシンの数の対応付けです。例えば:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">isolation.scheduler.machines: 
+    "my-topology": 8
+    "tiny-topology": 1
+    "some-other-topology": 3
+</code></pre></div>
+<p>クラスタに送信されたトポロジはで、ここにリストされていないものは隔離されません。Stormのユーザーが隔離設定に影響を及ぼす方法はないことに注意してください。これはクラスタの管理者だけに許可されています（意図的にそうなっています）。</p>
+
+<p>Isolation Schedulerは、トポロジを完全に隔離することで、マルチテナント問題（トポロジ間のリソース競合を回避する）を解決します。テストまたは開発中のトポロジではなく、&quot;本番用の&quot;トポロジを隔離設定にリストすることを意図しています。クラスタ上の残りのマシンは、隔離トポロジのfailoverとしての役割と、隔離されていないトポロジを実行する役割の二つを果たします。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

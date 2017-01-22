@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Structure of the Codebase</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Structure of the Codebase</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>Stormのコードベースには3つの独立したレイヤーがあります。</p>
+
+<p>第一に、Stormは最初から複数の言語と互換性があるように設計されていました。NimbusはThriftサービスであり、トポロジはThriftの構造として定義されています。Thriftを使用することによって、Stormはどの言語からでも使用できるようになっています。</p>
+
+<p>第二に、StormのすべてのインターフェースはJavaのインターフェースとして明示されています。Stormの実装の多くにClojureが使用されていても、すべての使用法はJava APIを経由しなければなりません。 つまり、Stormのすべての機能は常にJava経由で利用できます。</p>
+
+<p>第3に、Stormの実装は主にClojureにあります。コードの行数では、StormはおおむねJavaのコードの半分、Clojureのコード半分でできています。しかし、Clojureははるかに表現力豊かなので、実際には実装ロジックの大部分がClojureにあります。</p>
+
+<p>以降のセクションでは、これらのレイヤーのそれぞれについて詳しく説明します。</p>
+
+<h3 id="storm-thrift">storm.thrift</h3>
+
+<p>Stormのコードベースの構造を理解するための最初の場所は、<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/storm.thrift">storm.thrift</a> ファイルです。</p>
+
+<p>Stormは、コードを生成するために、Thriftの<a href="https://github.com/nathanmarz/thrift/tree/storm">フォーク</a>（&#39;storm&#39;ブランチ）を使用します。この &quot;フォーク&quot;は、実際にはThrift 7であり、すべてのJavaパッケージはorg.apache.thrift7という名前に変更されています。 それ以外についてはThrift 7と同じです。このフォークは、Thriftに下位互換性なかったことと、多くの人がStormトポロジで他のバージョンのThriftを使用する必要があったことを理由に行われました。</p>
+
+<p>トポロジ内のすべてのspoutまたはboltには、「コンポーネントID」と呼ばれるユーザー指定の識別子が与えられます。コンポーネントIDは、boltから他のspoutまたはboltの出力ストリームへのサブスクリプションを指定するために使用されます。 <a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/storm.thrift#L91">StormTopology</a> の構造は、コンポーネントIDから、コンポーネントの各タイプ（spoutまたはbolt）への対応付けが含まれています。</p>
+
+<p>spoutとboltはThriftの定義上同一であるため、<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/storm.thrift#L79">Thriftによるboltの定義</a>を見てみましょう。 それは<code>ComponentObject</code>構造体と<code>ComponentCommon</code>構造体を含んでいます。</p>
+
+<p><code>ComponentObject</code>はboltの実装を定義します。 次の3つのタイプのいずれかになります:</p>
+
+<ol>
+<li>シリアライズされたjavaオブジェクト (<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/task/IBolt.java">IBolt</a> の実装)</li>
+<li>実装が別の言語であることを示す<code>ShellComponent</code>オブジェクト。 このようにボルトを指定すると、Stormは<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/task/ShellBolt.java">ShellBolt</a>オブジェクトをインスタンス化し、JVMベースのワーカープロセスと非JVMベースのコンポーネント実装間の通信を処理します。</li>
+<li>Stormにそのボルトのインスタンス化に使用するクラス名とコンストラクタ引数を伝える<code>JavaObject</code>構造体。 これは、非JVM言語でトポロジを定義する場合に便利です。 こうすることで、Javaオブジェクトを自分で作成してシリアライズすることなく、JVMベースのspoutとboltを利用できます。</li>
+</ol>
+
+<p><code>ComponentCommon</code> このコンポーネントのその他すべてを定義します。 以下のものを含みます:</p>
+
+<ol>
+<li>このコンポーネントが送出するストリームと各ストリームのメタデータ（直接ストリームであるかフィールド宣言であるか）</li>
+<li>このコンポーネントが消費するストリーム（component_id：stream_idから使用するストリームグループへの対応付けとして指定）</li>
+<li>このコンポーネントのparallelism</li>
+<li>コンポーネント固有の<a href="Configuration.html">設定</a></li>
+</ol>
+
+<p>構造体のspoutも <code>ComponentCommon</code>フィールドを持っているので、spoutは他の入力ストリームを消費する宣言を持つこともできます。しかし、Storm Java APIでは、スパウトが他のストリームを消費する方法は提供されていません。spoutに何かしらの入力宣言を書くと、トポロジをsubmitしようとしたときにエラーが発生します。 spoutに入力宣言フィールドがある理由は、ユーザーが使用するのではなく、Storm自身が使用するためです。Stormは、<a href="https://github.com/apache/storm/wiki/Guaranteeing-message-processing">acking framework</a>をセットアップするためにトポロジに暗黙的なストリームとboltを追加します。これら2つの暗黙的なストリームは、acker boltからトポロジ内の各spoutへ接続します。ackerは、tuple treeが完了または失敗したことが検出されるたびに、これらのストリームに &quot;ack&quot;または &quot;fail&quot;メッセージを送信します。 ユーザーのトポロジを実行時のトポロジに変換するコードは、<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/common.clj#L279">ここ</a>にあります。</p>
+
+<h3 id="java">Javaインターフェイス</h3>
+
+<p>Stormのインターフェースは、通常、Javaインターフェースとして明示されます。 主要なインタフェースは次のとおりです:</p>
+
+<ol>
+<li><a href="javadocs/org/apache/storm/topology/IRichBolt.html">IRichBolt</a></li>
+<li><a href="javadocs/org/apache/storm/topology/IRichSpout.html">IRichSpout</a></li>
+<li><a href="javadocs/org/apache/storm/topology/TopologyBuilder.html">TopologyBuilder</a></li>
+</ol>
+
+<p>インターフェイスの多くについて、以下の戦略を採っています:</p>
+
+<ol>
+<li>Javaのinterfaceを使用してインタフェースを明示する</li>
+<li>必要に応じてデフォルトの実装を提供する基本クラスを提供する</li>
+</ol>
+
+<p>この戦略は、<a href="javadocs/org/apache/storm/topology/base/BaseRichSpout.html">BaseRichSpout</a>クラスで確認できます。</p>
+
+<p>spoutとboltは、上述のようにトポロジのThrift定義にシリアライズされます。</p>
+
+<p>インターフェイスの微妙な側面1つは、<code>IBolt</code>、<code>ISpout</code>と<code>IRichBolt</code>、<code>IRichSpout</code>の違いです。それらの主な違いは、インターフェイスの &quot;Rich&quot;バージョンには<code>declareOutputFields</code>メソッドが追加されていることです。分割の理由は、各出力ストリームの出力フィールド宣言はThrift構造体の一部である必要がある一方で（したがって、任意の言語から指定できます）、ユーザーとしてはストリームをユーザーのクラスの一部として宣言できるようにするためです。  Thrift表現を構築するときに<code>TopologyBuilder</code>が行うのは、<code>declareOutputFields</code>を呼び出して宣言を取得し、それをThrift構造体に変換することです。この変換は、<code>TopologyBuilder</code>コードの<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/topology/TopologyBuilder.java#L205">この部分</a>で行われます。</p>
+
+<h3 id="implementation">Implementation</h3>
+
+<p>Javaインターフェイス経由ですべての機能を明示することにより、Stormのすべての機能がJavaを介して利用できることを保証しています。Javaインターフェイスに焦点を当てることにより、Javaの世界からのユーザーエクスペリエンスが快適であることを保証します。</p>
+
+<p>一方、Stormの実装は、主にClojureで行われています。コードベースは行数ではJavaが約50％、Clojureが約50％ですが、実装ロジックのほとんどはClojureにあります。これには2つの注目すべき例外があります。それが<a href="https://github.com/apache/storm/wiki/Distributed-RPC">DRPC</a>と<a href="https://github.com/apache/storm/wiki/Transactional-topologies">トランザクショナルなトポロジ</a>の実装です。これらは純粋にJavaで実装されています。これは、Stormでより高いレベルの抽象化を実装するための実例に供するために行われました。DRPCとトランザクショナルなトポロジの実装は、 <a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/coordination">org.apache.storm.coordination</a>, <a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/drpc">org.apache.storm.drpc</a>, ならびに <a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/transactional">org.apache.storm.transactional</a>パッケージにあります。</p>
+
+<p>以下が主なJavaパッケージとClojureネームスペースの目的をまとめたものです:</p>
+
+<h4 id="java-packages">Java packages</h4>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/coordination">org.apache.storm.coordination</a>: Stormでバッチ処理を実現するために必要な部分を実装しています。DRPCとトランザクショナルなトポロジの両方が使用しています。ここでは、<code>CoordinatedBolt</code>が最も重要なクラスです。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/drpc">org.apache.storm.drpc</a>: DRPCの高レベルな抽象化の実装</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/generated">org.apache.storm.generated</a>: 生成されたStorm用のThriftコード（生成されたコードはThriftの<a href="https://github.com/nathanmarz/thrift">このフォーク</a>を使用して生成されます。単に他のThriftバージョンとの競合を避けるためにパッケージをorg.apache.thrift7にリネームします）</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/grouping">org.apache.storm.grouping</a>: カスタムストリームグループを作成するためのインターフェイスが含まれています</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/hooks">org.apache.storm.hooks</a>: Stormのさまざまなイベントにフックするためのインターフェース。タスクがタプルを送出するとき、タプルがackされるときなど。フックのユーザガイドは<a href="https://github.com/apache/storm/wiki/Hooks">こちら</a>です。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/serialization">org.apache.storm.serialization</a>: タプルのシリアライズ/デシリアライズ方法の実装。<a href="http://code.google.com/p/kryo/">Kryo</a>の上に構築されています。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/spout">org.apache.storm.spout</a>: spoutとそれに関連するインタフェースの定義（<code>SpoutOutputCollector</code>など）。非JVM言語でspoutを定義するためのプロトコルを実装する <code>ShellSpout</code>も含まれています。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/task">org.apache.storm.task</a>: boltとそれに関連するインターフェースの定義（<code>OutputCollector</code>など）。また、非JVM言語でボルトを定義するためのプロトコルを実装する <code>ShellBolt</code>も含まれています。最後に、<code>TopologyContext</code>もここに定義されています。これはspotとboltに提供されており、実行時にトポロジとその実行に関するデータを取得できるようにここで定義されています。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/testing">org.apache.storm.testing</a>: Stormのユニットテストに使用するためのさまざまなテスト用のboltとユーティリティが含まれています。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/topology">org.apache.storm.topology</a>: 基盤となるThrift構造のJavaレイヤーで、クリーンで純粋なJava APIをStormに提供するためのものです（ユーザーはThriftについて知る必要はありません）。 <code>TopologyBuilder</code>は、さまざまなspoutとboltの役に立つ基本クラスと同様にここにあります。若干高いレベルの <code>IBasicBolt</code>インターフェースがここにあります。これは、特定の種類のボルトを実装するためのシンプルな方法です。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/transactional">org.apache.storm.transactional</a>: トランザクショナルなトポロジの実装です。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/tuple">org.apache.storm.tuple</a>: Stormのデータモデルであるタプルについての実装です。</p>
+
+<p><a href="http://github.com/apache/storm/tree/1.x-branch/storm-core/src/jvm/org/apache/storm/tuple">org.apache.storm.utils</a>: コードベース全体で使用される、データ構造やその他のユーティリティです。</p>
+
+<h4 id="clojure-namespaces">Clojure namespaces</h4>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/bootstrap.clj">org.apache.storm.bootstrap</a>: すべてのクラスをインポートするのに役立つマクロや、コードベース全体で使用される名前空間などが含まれています。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/clojure.clj">org.apache.storm.clojure</a>: StormのClojure DSLの実装。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/cluster.clj">org.apache.storm.cluster</a>: Stormデーモンで使用されるすべてのZookeeperロジックがこのファイルにカプセル化されています。このコードは、クラスタの状態（どのようなタスクがどこで実行されているか、どのspout/boltがどのタスクのために実行されているか）をZookeeperの&quot;filesystem&quot; APIに対応付けされる方法を管理します。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/command">org.apache.storm.command.*</a>: これらの名前空間は、 <code>storm</code>コマンドラインクライアントのためのコマンドを実装しています。これらの実装は非常に短いです。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/config.clj">org.apache.storm.config</a>: Clojureのコード読み取り/解析コードの実装。また、様々な用途で使用されるnimbus/supervisor/daemonsのローカルパスを決定するユーティリティ関数もあります。例えば<code>master-inbox</code>関数はjarがアップロードされるときにNimbusが使うべきローカルパスを返します。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/acker.clj">org.apache.storm.daemon.acker</a>: &quot;acker&quot; boltの実装。これはStormがどのようにデータ処理を保証するかの重要な部分です。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/common.clj">org.apache.storm.daemon.common</a>: Stormデーモンで使用される共通関数の実装で、トポロジの名前からIDを取得したり、ユーザーのトポロジを実際に実行するトポロジにマッピングする（暗黙的なackingストリームとacker boltが追加されました - <code>system-topology!</code>関数を参照してください）、さまざまなheartbeatやStormによって永続化されたその他の構造体などの定義などがあります。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/drpc.clj">org.apache.storm.daemon.drpc</a>: DRPCトポロジで使用するためのDRPCサーバの実装。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/nimbus.clj">org.apache.storm.daemon.nimbus</a>: Nimbusの実装。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/supervisor.clj">org.apache.storm.daemon.supervisor</a>: スーパーバイザの実装。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/task.clj">org.apache.storm.daemon.task</a>: spoutやboltのなど個々のタスクの実装。メッセージルーティング、シリアライゼーション、UI向けの統計情報の収集、spoutやbolt固有の実行時の処理など。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/daemon/worker.clj">org.apache.storm.daemon.worker</a>: ワーカープロセスの実装（これには多くのタスクが含まれます）。メッセージの転送とタスクの起動を実装しています。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/event.clj">org.apache.storm.event</a>: シンプルな非同期関数のexecutorを実装しています。NimbusとSupervisorのさまざまな場所で、競合状態を回避するために機能を直列に実行するために使用されます。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/log.clj">org.apache.storm.log</a>: log4jにメッセージを記録するための関数を定義しています。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/messaging">org.apache.storm.messaging.*</a>: point to pointメッセージングを実装するためのより高いレベルのインタフェースを定義します。ローカルモードでは、Stormはメモリ内のJavaキューを使用してこれを行います。クラスタ上では、ZeroMQを使用します。汎用インタフェースはprotocol.cljで定義されています。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/stats.clj">org.apache.storm.stats</a>: UIのためにZKに統計情報を送信する際に使用される統計情報をロールアップするルーチンの実装です。ウィンドウやローリング集約を複数の粒度で扱います。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/testing.clj">org.apache.storm.testing</a>: Stormトポロジのテストに使用される機能の実装。時間をシミュレーションする機能や、トポロジーを介して固定セットのタプルを実行し出力をキャプチャする<code>complete-topology</code>、クラスタが「アイドル」のとなった検出を細粒度に制御するためのtrackerトポロジ、およびその他のユーティリティが含まれます。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/thrift.clj">org.apache.storm.thrift</a>: Thrift構造をより快適に使用するための、生成されたThrift APIに対するClojureラッパー。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/timer.clj">org.apache.storm.timer</a>: 未来のタイミング、あるいは定期的に関数を実行するバックグラウンドタイマーの実装。Stormは<a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/util/Timer.html">Timer</a>クラスを使用できませんでした。なぜならNimbusとSupervisorの単体テストができるようにするには、時間シミュレーションとの統合が必要だったからです。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/ui">org.apache.storm.ui.*</a>: Storm UIの実装。残りのコードベースとは完全に独立しており、Nimbus Thrift APIを使用してデータを取得します。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/util.clj">org.apache.storm.util</a>: コードベース全体で使用される汎用ユーティリティ関数を含みます。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/zookeeper.clj">org.apache.storm.zookeeper</a>: ookeeper APIの周りのClojureラッパーで、 &quot;mkdirs&quot;や &quot;delete-recursive&quot;のような &quot;ハイレベル&quot;のものを実装します。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

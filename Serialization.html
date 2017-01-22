@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Serialization</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Serialization</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>このページでは、Stormのシリアライゼーションシステムがバージョン0.6.0以降でどのように動作するか説明します。Stormは、0.6.0以前では、<a href="Serialization-(prior-to-0.6.0).html">Serialization (prior to 0.6.0)</a>に記載のある異なるシリアライゼーションシステムを使用していました。</p>
+
+<p>タプルは、あらゆるタイプのオブジェクトで構成できます。Stormは分散システムなので、オブジェクトをタスク間で渡したときにそれらをシリアリライズおよびデシリアライズする方法を知る必要があります。</p>
+
+<p>Stormはシリアライゼーションに<a href="https://github.com/EsotericSoftware/kryo">Kryo</a>を使用しています。Kryoは、小さな結果を生成する柔軟で高速なシリアライゼーションライブラリです。</p>
+
+<p>デフォルトでは、Stormはプリミティブ型、文字列、バイト配列、ArrayList、HashMap、HashSet、およびClojureコレクション型をシリアル化できます。タプルで別の型を使用する場合は、カスタムシリアライザを登録する必要があります。</p>
+
+<h3 id="dynamic-typing">Dynamic typing</h3>
+
+<p>タプルのフィールドの型宣言はありません。フィールドにオブジェクトを入れておけば、Stormは結果を動的に取り出します。シリアライゼーションのインターフェイスについて見る前に、Stormでタプルを動的型付けしている理由を理解しておきましょう。</p>
+
+<p>タプルフィールドを静的型付けとすると、StormのAPIには多大な複雑さが加わります。たとえば、Hadoopはキーやバリューを静的に型付けしますが、ユーザー側で膨大な量のアノテーションを必要とします。HadoopのAPIは使用する負担であり、&quot;型安全であること&quot;には価値がありません。動的型付けはシンプルで使い方が簡単です。</p>
+
+<p>それより、Stormのタプルを任意の方法で静的に型付けすることはできません。Boltが複数のストリームをサブスクライブしているとします。これらすべてのストリームのタプルは、フィールド間で異なるタイプを持つことがあります。Boltが<code>execute</code>で<code>Tuple</code>を受け取る際に、そのタプルはどんなストリームから来ていてもかまわないので、いろいろな型の組み合わせを持っている可能性があります。Boltがサブスクライブするすべてのタプルストリームに対して異なるメソッドを宣言できるreflection的な魔法があるかもしれませんが、Stormは動的型付けによる単純で直接的なアプローチを選択しています。</p>
+
+<p>最後に、動的型付けを使用するもう一つの理由は、ClojureやJRubyのような動的型付けを行う言語からStormを簡単に使用できることです。</p>
+
+<h3 id="custom-serialization">Custom serialization</h3>
+
+<p>前述のように、StormはシリアライゼーションにKryoを使用します。カスタムシリアライザを実装するには、新しいシリアライザをKryoに登録する必要があります。カスタムシリアライゼーションをどのように処理するかについて理解するために、<a href="https://github.com/EsotericSoftware/kryo">Kryoのホームページ</a>を読むことを強く推奨します。</p>
+
+<p>カスタムシリアライザの追加は、トポロジ設定の&quot;topology.kryo.register&quot;プロパティで行います。プロパティは登録対象ののリストを取り、次の2つの形式のいずれかを取ることができます:</p>
+
+<ol>
+<li>クラス名による登録。この場合、StormはKryoの<code>FieldsSerializer</code>を使ってクラスをシリアライズします。これはクラスにとって最適かもしれないし、そうでないかもしれません -- 詳細についてはKryoのドキュメントを見てください。</li>
+<li>登録するクラス名と<a href="https://github.com/EsotericSoftware/kryo/blob/master/src/com/esotericsoftware/kryo/Serializer.java">com.esotericsoftware.kryo.Serializer</a>の実装の対応付け</li>
+</ol>
+
+<p>例を見てみましょう。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">topology.kryo.register:
+  - com.mycompany.CustomType1
+  - com.mycompany.CustomType2: com.mycompany.serializer.CustomType2Serializer
+  - com.mycompany.CustomType3
+</code></pre></div>
+<p><code>com.mycompany.CustomType1</code>と<code>com.mycompany.CustomType3</code>は<code>FieldsSerializer</code>を使いますが、<code>com.mycompany.CustomType2</code>は <code>com.mycompany.serializer.CustomType2Serializer</code>を使ってシリアライゼーションします。</p>
+
+<p>Stormは、シリアライザをトポロジ設定に登録するためのヘルパーを提供します。<a href="javadocs/org/apache/storm/Config.html">Config</a>クラスには、registerSerializationというメソッドがあり、これを使用してレジストリを設定に追加します。</p>
+
+<p><code>Config.TOPOLOGY_SKIP_MISSING_KRYO_REGISTRATIONS</code>という高度な設定があります。これをtrueに設定すると、Stormは登録されているクラスパス上でコードを利用できないシリアライザは無視されます。それ以外の場合、Stormはシリアライザが見つからない場合にエラーをスローします。これは、クラスタ上で異なるシリアライゼーションを持つ多数のトポロジを実行するが、 <code>storm.yaml</code>ファイル内ですべてのトポロジについてのすべてのシリアライゼーションを宣言したい場合に便利です。</p>
+
+<h3 id="java-serialization">Java serialization</h3>
+
+<p>Stormがシリアライザが登録されていない型に遭遇した場合、可能であればJavaのシリアライゼーションを使用します。Javaのシリアライゼーションでオブジェクトをシリアライズできない場合、Stormはエラーをスローします。</p>
+
+<p>Javaのシリアライゼーションは、CPUコストとシリアライズされたオブジェクトのサイズの両面で非常に重いことに注意してください。トポロジをプロダクション環境に置くときは、カスタムシリアライザを登録することを強くお勧めします。Javaのシリアライゼーションを使えるようにしているのは、新しいトポロジのプロトタイプ作成を容易にするためです。</p>
+
+<p><code>Config.TOPOLOGY_FALL_BACK_ON_JAVA_SERIALIZATION</code>設定をfalseに設定することによって、Javaのシリアライゼーションにフォールバックする動作をオフにすることができます。</p>
+
+<h3 id="component-specific-serialization-registrations">Component-specific serialization registrations</h3>
+
+<p>Storm 0.7.0では、コンポーネント固有の設定を行うことができます(詳細については、<a href="Configuration.html">Configuration</a>を参照してください)。
+もちろん、あるコンポーネントが定義しているシリアライゼーションは、他のBoltでも使えるようになります -- そうしないと、そのコンポーネントからのメッセージを受信できなくなります!</p>
+
+<p>トポロジがsubmitされると、トポロジ内のすべてのコンポーネントがメッセージを送信するために使用されるシリアライゼーションの集合が選択されます。これは、コンポーネント固有のシリアライザのレジストリと、通常のシリアライザのセットをマージすることによって行われます。2つのコンポーネントが同じクラスのシリアライザを定義する場合、シリアライザの1つが任意に選択されます。</p>
+
+<p>2つのコンポーネント固有のレジストリの間に競合がある場合に特定のクラスに対してシリアライザを強制するには、使用したいシリアライザをトポロジ固有の設定として定義します。トポロジ固有の設定は、シリアライゼーションレジストリに関するのコンポーネント固有の構成よりも優先されます。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Storm SQL integration</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Storm SQL integration</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>Storm SQLの統合により、ユーザはStormのストリーミングデータに対してSQLクエリを実行できます。 SQLインターフェイスによってストリーミング分析の開発サイクルも短縮されるだけでなく、<a href="///hive.apache.org">Apache Hive</a>のようなバッチ処理とリアルタイムなストリーミングデータ分析を統一する機会も開かれます。</p>
+
+<p>非常に高位のレベルから、StormSQLはSQLクエリを<a href="Trident-API-Overview.html">Trident</a>のトポロジにコンパイルし、Stormクラスタで実行します。このドキュメントでは、StormSQLをエンドユーザとして使用する方法について説明します。 StormSQLの設計と実装の詳細については、<a href="storm-sql-internal.html">この</a>のページを参照してください。</p>
+
+<h2 id="usage">Usage</h2>
+
+<p><code>storm sql</code>コマンドを実行してSQL文をTridentトポロジにコンパイルし、それをStormクラスタに送信します</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ bin/storm sql &lt;sql-file&gt; &lt;topo-name&gt;
+</code></pre></div>
+<p><code>sql-file</code>は実行されるSQL文のリストを含み、<code>topo-name</code>はトポロジの名前です。</p>
+
+<h2 id="supported-features">Supported Features</h2>
+
+<p>現在のリポジトリでは、次の機能がサポートされています:</p>
+
+<ul>
+<li>外部データソースから/外部データソースに対するストリーミング</li>
+<li>タプルのフィルタリング</li>
+<li>射影</li>
+</ul>
+
+<h2 id="specifying-external-data-sources">Specifying External Data Sources</h2>
+
+<p>StormSQLでは、データは外部テーブルによって表されます。ユーザーは <code>CREATE EXTERNAL TABLE</code>ステートメントを使ってデータソースを指定することができます。<code>CREATE EXTERNAL TABLE</code>の構文は、<a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL">HiveのDDL</a>で定義されているものに厳密に従います。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">CREATE EXTERNAL TABLE table_name field_list
+    [ STORED AS
+      INPUTFORMAT input_format_classname
+      OUTPUTFORMAT output_format_classname
+    ]
+    LOCATION location
+    [ TBLPROPERTIES tbl_properties ]
+    [ AS select_stmt ]
+</code></pre></div>
+<p><a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL">HiveのDDL</a>にプロパティの詳細な説明があります。 たとえば、次の文はKafkaのspoutとsinkを指定します。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">CREATE EXTERNAL TABLE FOO (ID INT PRIMARY KEY) LOCATION 'kafka://localhost:2181/brokers?topic=test' TBLPROPERTIES '{"producer":{"bootstrap.servers":"localhost:9092","acks":"1","key.serializer":"org.apache.org.apache.storm.kafka.IntSerializer","value.serializer":"org.apache.org.apache.storm.kafka.ByteBufferSerializer"}}'
+</code></pre></div>
+<h2 id="plugging-in-external-data-sources">Plugging in External Data Sources</h2>
+
+<p>ユーザは<code>ISqlTridentDataSource</code>インタフェースを実装して外部データソースをプラグインし、Javaのservice loaderの機能を使用して登録します。 外部データソースは、テーブルのURIのスキームに基づいて選択されます。詳細については、<code>storm-sql-kafka</code>の実装を参照してください。</p>
+
+<h2 id="example-filtering-kafka-stream">Example: Filtering Kafka Stream</h2>
+
+<p>注文の取引を表すKafkaのストリームがあるとします。ストリーム内の各メッセージには、注文ID、製品の単価、注文の数量が含まれています。ゴールは、重要な注文を特定のうえ、その注文を別の分析のために別のストリームとして挿入することです。</p>
+
+<p>ユーザーは、SQLファイルに次のSQL文を指定できます:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">CREATE EXTERNAL TABLE ORDERS (ID INT PRIMARY KEY, UNIT_PRICE INT, QUANTITY INT) LOCATION 'kafka://localhost:2181/brokers?topic=orders' TBLPROPERTIES '{"producer":{"bootstrap.servers":"localhost:9092","acks":"1","key.serializer":"org.apache.org.apache.storm.kafka.IntSerializer","value.serializer":"org.apache.org.apache.storm.kafka.ByteBufferSerializer"}}'
+CREATE EXTERNAL TABLE LARGE_ORDERS (ID INT PRIMARY KEY, TOTAL INT) LOCATION 'kafka://localhost:2181/brokers?topic=large_orders' TBLPROPERTIES '{"producer":{"bootstrap.servers":"localhost:9092","acks":"1","key.serializer":"org.apache.org.apache.storm.kafka.IntSerializer","value.serializer":"org.apache.org.apache.storm.kafka.ByteBufferSerializer"}}'
+INSERT INTO LARGE_ORDERS SELECT ID, UNIT_PRICE * QUANTITY AS TOTAL FROM ORDERS WHERE UNIT_PRICE * QUANTITY &gt; 50
+</code></pre></div>
+<p>最初のステートメントは入力ストリームを表す<code>ORDER</code>テーブルを定義します。<code>LOCATION</code>節は、brokerのZkHost(<code>localhost:2181</code>)、ZooKeeperのパス(<code>/brokers</code>)と、トピック(<code>orders</code>)を指定しています。<code>TBLPROPERTIES</code>節は<a href="http://kafka.apache.org/documentation.html#producerconfigs">KafkaProducer</a>の設定です。
+<code>storm-sql-kafka</code>の現在の実装では、テーブルが読み込み専用または書き込み専用であっても、<code>LOCATION</code>節と<code>TBLPROPERTIES</code>節の両方を指定する必要があります。</p>
+
+<p>同様に、2番目のステートメントは、出力ストリームを表す <code>LARGE_ORDERS</code>テーブルを指定しています。 3番目のステートメントは<code>SELECT</code>ステートメントで、トポロジーを定義しています。StormSQLは外部テーブル<code>ORDERS</code>のすべての注文をフィルタリングし、合計価格を計算のうえ、条件にマッチしたレコードを<code>LARGE_ORDER</code>のKafkaのストリームに挿入します。</p>
+
+<p>この例を実行するには、データソース（この場合は<code>storm-sql-kafka</code>）とそのクラスパスへの依存関係を含める必要があります。必要なjarファイルを<code>extlib</code>ディレクトリに置くのも一つの方法です。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ cp curator-client-2.5.0.jar curator-framework-2.5.0.jar zookeeper-3.4.6.jar
+ extlib/
+$ cp scala-library-2.10.4.jar kafka-clients-0.8.2.1.jar kafka_2.10-0.8.2.1.jar metrics-core-2.2.0.jar extlib/
+$ cp json-simple-1.1.1.jar extlib/
+$ cp jackson-annotations-2.6.0.jar extlib/
+$ cp storm-kafka-*.jar storm-sql-kafka-*.jar storm-sql-runtime-*.jar extlib/
+</code></pre></div>
+<p>次のステップでは、SQLステートメントをStormSQLに送信しています。</p>
+<div class="highlight"><pre><code class="language-" data-lang="">$ bin/storm sql order_filtering order_filtering.sql
+</code></pre></div>
+<p>ここまでで、Storm UIで<code>order_filtering</code>トポロジを見ることができます</p>
+
+<h2 id="current-limitations">Current Limitations</h2>
+
+<p>集約、ウィンドウ処理、結合はまだ実装されていません。トポロジに対して並列処理ヒントを指定する機能はまだサポートされていません。すべてのプロセッサのparallelism hintは1です。</p>
+
+<p>ユーザーはまた、<code>extlib</code>ディレクトリに外部データソースの依存関係を提供する必要があります。さもなければ、トポロジは <code>ClassNotFoundException</code>のために実行に失敗します。</p>
+
+<p>StormSQLのKafkaコネクタの現在の実装では、入力と出力の両方がJSON形式であると想定しています。コネクターは<code>INPUTFORMAT</code>と<code>OUTPUTFORMAT</code>節をまだ認識していません。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

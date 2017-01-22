@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Contributing</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Contributing</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h3 id="getting-started-with-contributing">Getting started with contributing</h3>
+
+<p><a href="https://issues.apache.org/jira/browse/STORM">issue tracker</a> にあるいくつかの問題には「Newbie」というラベルが付けられています。 もしStormにコントリビューションすることに興味があるものの、どこからはじめるべきか分からなければ、これらは手始めとするのに良い問題です。これらの問題は、コードベースの独立した部分についてのみ学習する必要があり、比較的少ない作業量しか必要としないため、コードベースの学習にとても良い方法です。</p>
+
+<h3 id="learning-the-codebase">Learning the codebase</h3>
+
+<p>wikiにある <a href="Implementation-docs.html">実装に関するドキュメント</a> のセクションでは、コードベースの詳細なウォークスルーを提供しています。 コードベースを理解するために、これらのドキュメントを読むことを強くお勧めします。</p>
+
+<h3 id="contribution-process">Contribution process</h3>
+
+<p>Stormのコードベースへの貢献は、<a href="https://github.com/apache/storm">GitHub</a> に対するプルリクエストとして送られる必要があります。 プルリクエストに問題がある場合は、GitHubのコメント機能を使用して改善を繰り返すことができます。</p>
+
+<p>小さなパッチの場合は、プルリクエストを直接提出してください。 より大きなコントリビューションを行う場合、以下のプロセスを使用してください。 このプロセスの背景、無駄な作業を防止するとともに、早い段階で設計上の問題を捉えることです。</p>
+
+<ol>
+<li><a href="https://issues.apache.org/jira/browse/STORM">issue tracker</a> に存在しない問題については、起票してください</li>
+<li>問題を実装するための方法についてコメントしてください。 あなたが作業する予定のコードベースの各部分と、それらがどのように結合されるかを説明してください</li>
+<li>Stormコミッタ達は、あなたが正しい軌道に乗っていることを確認するために、設計上の観点であなたと繰り返し議論します</li>
+<li>問題解決方法を実装し、プルリクエストを送信し、それらを繰り返します</li>
+</ol>
+
+<h3 id="modules-built-on-top-of-storm">Modules built on top of Storm</h3>
+
+<p>Stormのコアに実装するには適していないStormの上に構築されたモジュール（spouts, boltsなど）は、あなた自身のプロジェクトとして、または<a href="https://github.com/stormprocessor">@stormprocessor</a>の一部として実装することができます。@stormprocessorに参加するには、自分のプロジェクトを自身のGithubに入れて、メーリングリストに@stormprocessorの一部にするという電子メールを送ってください。そうすると、コミュニティは@stormprocessorに取り込むことが有益であるか議論することができます。 それから、あなたは@stormprocessorのorganizationに追加され、そこでプロジェクトをメンテナンスすることができます。 @stormprocessorにモジュールをホストする利点は、潜在的なユーザーがプロジェクトを簡単に見つけることができることです。</p>
+
+<h3 id="contributing-documentation">Contributing documentation</h3>
+
+<p>ドキュメントの貢献は大歓迎です！ メーリングリストにメールを送るのがコントリビューションを送る最も良い方法です。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

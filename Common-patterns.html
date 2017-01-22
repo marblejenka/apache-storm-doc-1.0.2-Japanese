@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Common Topology Patterns</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Common Topology Patterns</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>このページには、Stormトポロジのさまざまな共通パターンが挙げられています。</p>
+
+<ol>
+<li>Streaming joins</li>
+<li>Batching</li>
+<li>BasicBolt</li>
+<li>In-memory caching + fields grouping combo</li>
+<li>Streaming top N</li>
+<li>TimeCacheMap for efficiently keeping a cache of things that have been recently updated</li>
+<li>CoordinatedBolt and KeyedFairBolt for Distributed RPC</li>
+</ol>
+
+<h3 id="joins">Joins</h3>
+
+<p>ストリーミング結合は、共通のフィールドに基づいて2つ以上のデータストリームを結合します。通常のデータベースの結合は入力が有限でありクリアなセマンティクスであると言えますが、ストリーミング結合は入力が無限であり不明瞭なセマンティクスであると言えます。</p>
+
+<p>必要な結合の種類は、アプリケーションごとに異なります。一部のアプリケーションは、有限のタイムウィンドウにおいて2つのストリームのすべてのタプルをjoinしますが、他のアプリケーションでは、各結合フィールドの各側にただ1つのタプルを期待してjoinします。さらに他のアプリケーションでは、完全に異なる結合を行いたい場合があります。これらすべての結合タイプ間の共通パターンは、複数の入力ストリームを同じ方法で分割できることです。これは、Stormでは、Joiner Boltへのいくつかの入力ストリームに対して、同じフィールドでFields Groupingを使用することで簡単に実行できます。例えば:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"join"</span><span class="o">,</span> <span class="k">new</span> <span class="n">MyJoiner</span><span class="o">(),</span> <span class="n">parallelism</span><span class="o">)</span>
+  <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="s">"1"</span><span class="o">,</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"joinfield1"</span><span class="o">,</span> <span class="s">"joinfield2"</span><span class="o">))</span>
+  <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="s">"2"</span><span class="o">,</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"joinfield1"</span><span class="o">,</span> <span class="s">"joinfield2"</span><span class="o">))</span>
+  <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="s">"3"</span><span class="o">,</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"joinfield1"</span><span class="o">,</span> <span class="s">"joinfield2"</span><span class="o">));</span>
+</code></pre></div>
+<p>もちろん、異なるストリームが同じフィールド名を持つ必要はありません。</p>
+
+<h3 id="batching">Batching</h3>
+
+<p>効率やその他の理由から、タプルのグループを個別に処理するのではなくバッチで処理したいことがよくあります。たとえば、データベースへの更新をバッチ処理したり、ある種のストリーミング集約を実行したいときです。</p>
+
+<p>データ処理の信頼性を望む場合、これを行う正しい方法は、バッチ処理を行うのを待っている間にインスタンス変数のタプルを保持することです。一度バッチ処理を実行すると、保持していたすべてのタプルをackできます。</p>
+
+<p>Boltがタプルを出力する際に、multi-anchoringを使用して信頼性を確保することができます。それはすべてアプリケーション固有の条件に依存します。信頼性の仕組みの詳細については、<a href="Guaranteeing-message-processing.html">メッセージ処理の保証</a> を参照してください。</p>
+
+<h3 id="basicbolt">BasicBolt</h3>
+
+<p>多くのボルトは、入力タプルを読み取って、その入力タプルに基づいてゼロ個以上のタプルを出力し、次にexecuteメソッドの終了時にその入力タプルを即座にackするという同様のパターンに従います。 このパターンに合ったBoltは、関数やフィルターのようなものです。これは、Stormがこのパターンを自動化する<a href="javadocs/org/apache/storm/topology/IBasicBolt.html">IBasicBolt</a> というインターフェースで公開しているような共通のパターンです。 詳細については、<a href="Guaranteeing-message-processing.html">メッセージ処理の保証</a>を参照してください。</p>
+
+<h3 id="in-memory-caching-fields-grouping-combo">In-memory caching + fields grouping combo</h3>
+
+<p>Stormボルトでキャッシュをメモリ内に保持するのは一般的です。キャッシングは、フィールドのグループ化と組み合わせると特に強力になります。たとえば、短いURL(bit.ly、t.coなど)を長いURLに展開するBoltがあるとします。短いURLから展開された長いURLのLRUキャッシュを保持することによって同じHTTP要求を何度も繰り返さないようにし、パフォーマンスを向上させることができます。コンポーネント&quot;urls&quot;が短いURLを送出し、コンポーネント&quot;expand&quot;が短いURLを長いURLに展開するとともに内部的にキャッシュを保持すると仮定します。以下の2つのコードスニペットの違いを考えてみましょう。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"expand"</span><span class="o">,</span> <span class="k">new</span> <span class="n">ExpandUrl</span><span class="o">(),</span> <span class="n">parallelism</span><span class="o">)</span>
+  <span class="o">.</span><span class="na">shuffleGrouping</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+</code></pre></div><div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"expand"</span><span class="o">,</span> <span class="k">new</span> <span class="n">ExpandUrl</span><span class="o">(),</span> <span class="n">parallelism</span><span class="o">)</span>
+  <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="s">"urls"</span><span class="o">,</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"url"</span><span class="o">));</span>
+</code></pre></div>
+<p>2番目の方法は、同じURLが常に同じタスクになるので、より効果的なキャッシュを実現します。これにより、タスク内のどのキャッシュにおいても重複が起こることがなくなり、短いURLがキャッシュにヒットする可能性が高くなります。</p>
+
+<h3 id="streaming-top-n">Streaming top N</h3>
+
+<p>Stormで行われる一般的な連続計算は、&quot;streaming top N&quot;的なものです。[&quot;value&quot;, &quot;count&quot;]という形式のタプルを送出するBoltがあり、カウントに基づいてTop N個のタプルを出力するBoltを必要としているとします。これを行う最も簡単な方法は、ストリーム上でグローバルなグループ化を行い、上位N項目のリストをメモリ内に保持するBoltを持つことです。</p>
+
+<p>このアプローチは、ストリーム全体が1つのタスクを通過しなければならないため、大きなストリームに対応するようスケールさせることはできません。計算を行うより良い方法は、ストリームの複数のパーティションにわたって多数のTop Nを並列に実行し、それらのTop Nを結合してグローバルなTop Nを得ることです。パターンは次のようになります:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"rank"</span><span class="o">,</span> <span class="k">new</span> <span class="n">RankObjects</span><span class="o">(),</span> <span class="n">parallelism</span><span class="o">)</span>
+  <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="s">"objects"</span><span class="o">,</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"value"</span><span class="o">));</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"merge"</span><span class="o">,</span> <span class="k">new</span> <span class="n">MergeObjects</span><span class="o">())</span>
+  <span class="o">.</span><span class="na">globalGrouping</span><span class="o">(</span><span class="s">"rank"</span><span class="o">);</span>
+</code></pre></div>
+<p>このパターンは、最初のBoltによってFields Groupingをしているため、意味的に正しいパーティショニングを行えており、機能します。storm-starterの<a href="http://github.com/apache/storm/blob/1.x-branch/examples/storm-starter/src/jvm/org/apache/storm/starter/RollingTopWords.java">これ</a>でこのパターンの例を見ることができます。 。</p>
+
+<p>ただし、処理中のデータに既知のスキューがある場合は、fieldsGroupingの代わりにpartialKeyGroupingを使用すると便利です。 これにより、1つの下流のBoltの代わりに、2つの下流のBoltに負荷が分散されます。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"count"</span><span class="o">,</span> <span class="k">new</span> <span class="n">CountObjects</span><span class="o">(),</span> <span class="n">parallelism</span><span class="o">)</span>
+  <span class="o">.</span><span class="na">partialKeyGrouping</span><span class="o">(</span><span class="s">"objects"</span><span class="o">,</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"value"</span><span class="o">));</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"rank"</span> <span class="k">new</span> <span class="n">AggregateCountsAndRank</span><span class="o">(),</span> <span class="n">parallelism</span><span class="o">)</span>
+  <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="s">"count"</span><span class="o">,</span> <span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"key"</span><span class="o">))</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"merge"</span><span class="o">,</span> <span class="k">new</span> <span class="n">MergeRanksObjects</span><span class="o">())</span>
+  <span class="o">.</span><span class="na">globalGrouping</span><span class="o">(</span><span class="s">"rank"</span><span class="o">);</span>
+</code></pre></div>
+<p>トポロジでは、上流のボルトからの部分カウントを集計するために余分な処理層が必要ですが、これは集計された値を処理するだけなので、Boltはスキューしたデータによる負荷の影響を受けません。storm-starterの<a href="http://github.com/apache/storm/blob/1.x-branch/examples/storm-starter/src/jvm/org/apache/storm/starter/SkewedRollingTopWords.java">ここ</a>でこのパターンの例を見ることができます。 。</p>
+
+<h3 id="timecachemap-for-efficiently-keeping-a-cache-of-things-that-have-been-recently-updated">TimeCacheMap for efficiently keeping a cache of things that have been recently updated</h3>
+
+<p>直近で&quot;active&quot;だったアイテムをキャッシュに残しておき、しばらくの間アクティブでないアイテムを自動的に期限切れにしたい場合があります。<a href="javadocs/org/apache/storm/utils/TimeCacheMap.html">TimeCacheMap</a>は、これを行うための効率的なデータ構造であり、アイテムが期限切れになった際のコールバックを挿入できるフックを提供します。</p>
+
+<h3 id="coordinatedbolt-and-keyedfairbolt-for-distributed-rpc">CoordinatedBolt and KeyedFairBolt for Distributed RPC</h3>
+
+<p>Stormの上に分散RPCアプリケーションを構築する場合、通常は2つの共通パターンが必要です。これらはStormのコードベースに同梱されている&quot;標準ライブラリ&quot;の一部である<a href="javadocs/org/apache/storm/task/CoordinatedBolt.html">CoordinatedBolt</a>と<a href="javadocs/org/apache/storm/task/KeyedFairBolt.html">KeyedFairBolt</a>でカプセル化されています。</p>
+
+<p><code>CoordinatedBolt</code>はロジックを含むBoltをラップし、あなたのBoltが任意のリクエストに対してすべてのタプルを受け取ったときに出力されます。これはDirect Streamを頻繁に使用します。</p>
+
+<p><code>KeyedFairBolt</code>はロジックを含むBoltをラップし、一度に1つずつ直列に行うのではなく、トポロジが同時に複数のDRPC呼び出しを処理するようにします。</p>
+
+<p>詳細は<a href="Distributed-RPC.html">Distributed RPC</a>を参照してください。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

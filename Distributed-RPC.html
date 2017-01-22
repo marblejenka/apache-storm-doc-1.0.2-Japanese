@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Distributed RPC</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Distributed RPC</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>分散RPC(DRPC)の背後にあるアイデアは、Stormを使用して実際に強力な関数の計算を並列で並列化することです。Stormのトポロジは、関数の引数をストリームの入力として取り込み、それらの関数呼び出しのそれぞれの結果についての出力ストリームをemitします。</p>
+
+<p>DRPCはそれほどStormの機能らしい機能ではありません。Stormのストリーム、Spout、Bolt、トポロジなどのプリミティブによって表現されるパターンです。DRPCはStormとは別のライブラリとしてパッケージ化されていたかもしれませんが、Stormにバンドルされているのでとても便利です。</p>
+
+<h3 id="high-level-overview">High level overview</h3>
+
+<p>分散RPCは&quot;DRPCサーバー&quot;によって調整されます(Stormにはこの実装がパッケージ化されています)。DRPCサーバーは、RPC要求の受信、Stormトポロジへの要求の送信、Stormトポロジからの結果の受信、および結果を待機中のクライアントに返すことなどを調整します。クライアントから見ると、分散RPC呼び出しは通常のRPC呼び出しと同じように見えます。たとえば、クライアントが引数 &quot;<a href="http://twitter.com">http://twitter.com</a>&quot; を使用して &quot;reach&quot; 関数の結果を計算する方法は次のとおりです。</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">DRPCClient</span> <span class="n">client</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DRPCClient</span><span class="o">(</span><span class="s">"drpc-host"</span><span class="o">,</span> <span class="mi">3772</span><span class="o">);</span>
+<span class="n">String</span> <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">"reach"</span><span class="o">,</span> <span class="s">"http://twitter.com"</span><span class="o">);</span>
+</code></pre></div>
+<p>分散RPCのワークフローは次のようになります:</p>
+
+<p><img src="images/drpc-workflow.png" alt="Tasks in a topology"></p>
+
+<p>クライアントは、実行する関数の名前とその関数の引数をDRPCサーバーに送信します。その機能を実装するトポロジは、DRPCサーバからの関数呼び出しのストリームを受信するために<code>DRPCSpout</code>を使用します。各関数の呼び出しは、DRPCサーバーによって一意のIDでタグ付けされます。次に、トポロジは結果を計算し、トポロジの最後で<code>ReturnResults</code>と呼ばれるBoltがDRPCサーバに接続し、それに関数呼び出しのIDに対する結果を与えます。DRPCサーバーはそのIDを使用して、結果を待機しているクライアントを照合し、その待機中のクライアントのブロックを解除し、結果を送信します。</p>
+
+<h3 id="lineardrpctopologybuilder">LinearDRPCTopologyBuilder</h3>
+
+<p>Stormには、<a href="javadocs/org/apache/storm/drpc/LinearDRPCTopologyBuilder.html">LinearDRPCTopologyBuilder</a>というtopology builderが付属しており、DRPCを実行するためのほとんどすべてのステップを自動化します。これらには以下のものが含まれます:</p>
+
+<ol>
+<li>Spoutのセットアップ</li>
+<li>結果をDRPCサーバーに戻す</li>
+<li>タプルのグループに対して有限の集約を行うためのボルトへの機能の提供</li>
+</ol>
+
+<p>簡単な例を見てみましょう。以下は、入力引数に&quot;！&quot;をつけて返すDRPCトポロジの実装です:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">ExclaimBolt</span> <span class="kd">extends</span> <span class="n">BaseBasicBolt</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">execute</span><span class="o">(</span><span class="n">Tuple</span> <span class="n">tuple</span><span class="o">,</span> <span class="n">BasicOutputCollector</span> <span class="n">collector</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">String</span> <span class="n">input</span> <span class="o">=</span> <span class="n">tuple</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="n">collector</span><span class="o">.</span><span class="na">emit</span><span class="o">(</span><span class="k">new</span> <span class="n">Values</span><span class="o">(</span><span class="n">tuple</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="mi">0</span><span class="o">),</span> <span class="n">input</span> <span class="o">+</span> <span class="s">"!"</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">declareOutputFields</span><span class="o">(</span><span class="n">OutputFieldsDeclarer</span> <span class="n">declarer</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">declarer</span><span class="o">.</span><span class="na">declare</span><span class="o">(</span><span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="s">"result"</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">LinearDRPCTopologyBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LinearDRPCTopologyBuilder</span><span class="o">(</span><span class="s">"exclamation"</span><span class="o">);</span>
+    <span class="n">builder</span><span class="o">.</span><span class="na">addBolt</span><span class="o">(</span><span class="k">new</span> <span class="n">ExclaimBolt</span><span class="o">(),</span> <span class="mi">3</span><span class="o">);</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>見ての通り、やらないといけないことはほとんどありません。<code>LinearDRPCTopologyBuilder</code>を作成するときは、トポロジのDRPC関数の名前を指定します。1つのDRPCサーバーで多くの関数を扱うことができ、関数名で関数を互いに区別します。宣言した最初のBoltは入力として対のタプルをとります。最初のフィールドは要求IDで、2番目のフィールドはその要求の引数です。<code>LinearDRPCTopologyBuilder</code>は最後のBoltが[id、result]という形式の対のタプルを含む出力ストリームを出力することを期待しています。最後に、すべての中間タプルには、最初のフィールドとして要求IDが含まれていなければなりません。</p>
+
+<p>この例では、<code>ExclaimBolt</code>は単にタプルの2番目のフィールドに&quot;！&quot;を付けて渡します。<code>LinearDRPCTopologyBuilder</code>は、DRPCサーバに接続して結果を返す調整の残りの部分を処理します。</p>
+
+<h3 id="local-mode-drpc">Local mode DRPC</h3>
+
+<p>DRPCはローカルモードで実行できます。上記の例をローカルモードで実行する方法は次のとおりです:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">LocalDRPC</span> <span class="n">drpc</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LocalDRPC</span><span class="o">();</span>
+<span class="n">LocalCluster</span> <span class="n">cluster</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LocalCluster</span><span class="o">();</span>
+
+<span class="n">cluster</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span><span class="s">"drpc-demo"</span><span class="o">,</span> <span class="n">conf</span><span class="o">,</span> <span class="n">builder</span><span class="o">.</span><span class="na">createLocalTopology</span><span class="o">(</span><span class="n">drpc</span><span class="o">));</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Results for 'hello':"</span> <span class="o">+</span> <span class="n">drpc</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">"exclamation"</span><span class="o">,</span> <span class="s">"hello"</span><span class="o">));</span>
+
+<span class="n">cluster</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+<span class="n">drpc</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+</code></pre></div>
+<p>最初に<code>LocalDRPC</code>オブジェクトを作成します。このオブジェクトは、<code>LocalCluster</code>が処理中のStormクラスタをシミュレートするのと同様に、処理中のDRPCサーバをシミュレートします。次に、ローカルモードでトポロジを実行するために <code>LocalCluster</code>を作成します。<code>LinearDRPCTopologyBuilder</code>は、ローカルトポロジーとリモートトポロジーを作成するための別個のメソッドを持っています。ローカルモードでは、<code>LocalDRPC</code>オブジェクトはどのポートにもバインドしないので、トポロジは通信すべきオブジェクトを知る必要があります。これは、<code>createLocalTopology</code>が<code>LocalDRPC</code>オブジェクトを入力として取り込む理由です。</p>
+
+<p>トポロジを起動した後、<code>LocalDRPC</code>で<code>execute</code>メソッドを使ってDRPC呼び出しを行うことができます。</p>
+
+<h3 id="remote-mode-drpc">Remote mode DRPC</h3>
+
+<p>実際のクラスタでDRPCを使用することも簡単です。3つのステップがあります:</p>
+
+<ol>
+<li>DRPCサーバーを起動します</li>
+<li>DRPCサーバーの場所を設定します</li>
+<li>DRPCトポロジをStormクラスタに送信する</li>
+</ol>
+
+<p>DRPCサーバの起動は<code>storm</code>スクリプトで行うことができ、NimbusやUIを起動するのとだいたい同じです:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">bin/storm drpc
+</code></pre></div>
+<p>次に、DRPCサーバーの場所をStormクラスターに設定する必要があります。これは、<code>DRPCSpout</code>がどこから読み込みの関数呼び出しをするか知る方法です。これは、 <code>storm.yaml</code>ファイルまたはトポロジの設定によって行うことができます。<code>storm.yaml</code>でこれを設定すると、次のようになります:</p>
+<div class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="s">drpc.servers</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s2">"</span><span class="s">drpc1.foo.com"</span>
+  <span class="pi">-</span> <span class="s2">"</span><span class="s">drpc2.foo.com"</span>
+</code></pre></div>
+<p>最後に、他のトポロジーを起動するのと同じように、<code>StormSubmitter</code>を使用してDRPCトポロジを起動します。リモートモードで上記の例を実行するには、次のようにします:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">StormSubmitter</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span><span class="s">"exclamation-drpc"</span><span class="o">,</span> <span class="n">conf</span><span class="o">,</span> <span class="n">builder</span><span class="o">.</span><span class="na">createRemoteTopology</span><span class="o">());</span>
+</code></pre></div>
+<p><code>createRemoteTopology</code>は、ストームクラスタに適したトポロジを作成するために使用されます。</p>
+
+<h3 id="a-more-complex-example">A more complex example</h3>
+
+<p>exclamationを付けるDRPCの例は、DRPCの概念を説明するための簡単なものの例でした。ストーム・クラスタがDRPC機能を計算するために提供する並列処理が本当に必要な、より複雑な例を見てみましょう。ここでは、TwitterでURL​​のReachを計算する例を示します。</p>
+
+<p>URLのReachとは、特定のURLが提示されたユニークユーザーの数です。リーチを計算するには、以下が必要です:</p>
+
+<ol>
+<li>あるURLをツイートしたすべての人を取得する</li>
+<li>その人たちのフォロワーを全て取得する</li>
+<li>そのフォロワーの集合を一意にする</li>
+<li>一意になったフォロワーの数を数える</li>
+</ol>
+
+<p>1回のReachの計算には、計算中に何千ものデータベース呼び出しと数千万のフォロワーの記録が含まれることがあります。それは実際には本当に激しい計算です。あなたが目にしているように、Stormの上にこの機能を実装するのは簡単ではありません。単一のマシンでは、Reachの計算に数分かかることがあります; Stormクラスターでは、数秒で最も難しいURLについてのReachを計算することができます。</p>
+
+<p>Reachを計算するトポロジのサンプルは、storm-starterの<a href="http://github.com/apache/storm/blob/1.x-branch/examples/storm-starter/src/jvm/org/apache/storm/starter/ReachTopology.java">ここ</a>で定義されていますeachを計算するトポロジを定義する方法は次のとおりです:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">LinearDRPCTopologyBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LinearDRPCTopologyBuilder</span><span class="o">(</span><span class="s">"reach"</span><span class="o">);</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">addBolt</span><span class="o">(</span><span class="k">new</span> <span class="n">GetTweeters</span><span class="o">(),</span> <span class="mi">3</span><span class="o">);</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">addBolt</span><span class="o">(</span><span class="k">new</span> <span class="n">GetFollowers</span><span class="o">(),</span> <span class="mi">12</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">shuffleGrouping</span><span class="o">();</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">addBolt</span><span class="o">(</span><span class="k">new</span> <span class="n">PartialUniquer</span><span class="o">(),</span> <span class="mi">6</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="s">"follower"</span><span class="o">));</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">addBolt</span><span class="o">(</span><span class="k">new</span> <span class="n">CountAggregator</span><span class="o">(),</span> <span class="mi">2</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">fieldsGrouping</span><span class="o">(</span><span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"id"</span><span class="o">));</span>
+</code></pre></div>
+<p>トポロジは4つのステップで実行されます:</p>
+
+<ol>
+<li><code>GetTweeters</code>はURLをツイートしたユーザーを取得します。<code>[id, url]</code>の入力ストリームを<code>[id, tweeter]</code>の出力ストリームに変換します。各<code>url</code>タプルは複数の<code>tweeter</code>タプルにマップされます。</li>
+<li><code>GetFollowers</code>はツイーターのフォロワーを取得します。<code>[id, tweeter]</code>の入力ストリームを<code>[id, follower]</code>の出力ストリームに変換します。すべてのタスクにわたって、同じURLをツイートした複数の人をフォローしている人がいると、フォロワータプルが重複することがあります。</li>
+<li><code>PartialUniquer</code>は、フォロワーのストリームをフォロワーIDでグループ化します。これによって、同じフォロワーを同じタスクに集約せることができます。したがって、 <code>PartialUniquer</code>の各タスクは、互いにに独立したフォロワーのセットを受け取ります。<code>PartialUniquer</code>は、要求IDに対するすべてのフォロワーのタプルを受け取ると、そのフォロワーの部分集合に対する一意のカウントを出力します</li>
+<li>最後に、<code>CountAggregator</code>は、<code>PartialUniquer</code>タスクのそれぞれから部分カウントを受け取り、それを合計してReachの計算が完了します</li>
+</ol>
+
+<p><code>PartialUniquer</code>のBoltを見てみましょう:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PartialUniquer</span> <span class="kd">extends</span> <span class="n">BaseBatchBolt</span> <span class="o">{</span>
+    <span class="n">BatchOutputCollector</span> <span class="n">_collector</span><span class="o">;</span>
+    <span class="n">Object</span> <span class="n">_id</span><span class="o">;</span>
+    <span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">_followers</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">prepare</span><span class="o">(</span><span class="n">Map</span> <span class="n">conf</span><span class="o">,</span> <span class="n">TopologyContext</span> <span class="n">context</span><span class="o">,</span> <span class="n">BatchOutputCollector</span> <span class="n">collector</span><span class="o">,</span> <span class="n">Object</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">_collector</span> <span class="o">=</span> <span class="n">collector</span><span class="o">;</span>
+        <span class="n">_id</span> <span class="o">=</span> <span class="n">id</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">execute</span><span class="o">(</span><span class="n">Tuple</span> <span class="n">tuple</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">_followers</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">tuple</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="mi">1</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">finishBatch</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">_collector</span><span class="o">.</span><span class="na">emit</span><span class="o">(</span><span class="k">new</span> <span class="n">Values</span><span class="o">(</span><span class="n">_id</span><span class="o">,</span> <span class="n">_followers</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">declareOutputFields</span><span class="o">(</span><span class="n">OutputFieldsDeclarer</span> <span class="n">declarer</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">declarer</span><span class="o">.</span><span class="na">declare</span><span class="o">(</span><span class="k">new</span> <span class="n">Fields</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="s">"partial-count"</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><code>PartialUniquer</code>は<code>BaseBatchBolt</code>を継承して<code>IBatchBolt</code>を実装します。バッチボルトは、具象的なまとまりとしてタプルのバッチを処理するためのファーストクラスのAPIを提供します。バッチボルトの新しいインスタンスが各要求IDごとに作成され、Stormは必要な場合にインスタンスをクリーンアップします。</p>
+
+<p><code>PartialUniquer</code>は、<code>execute</code>メソッドでフォロワーのタプルを受け取ると、それを内部の<code>HashSet</code>内のリクエストIDの集合に追加します。</p>
+
+<p>バッチボルトは、このタスクが対象とするバッチのすべてのタプルが処理された後に呼び出される<code>finishBatch</code>メソッドを提供します。そのコールバックでは、 <code>PartialUniquer</code>は、フォロワーIDのサブセットに対する一意としたカウントを含む単一のタプルを出力します。</p>
+
+<p>内部的には、指定された要求IDに対して与えられたボルトがすべてのタプルを受け取ったことを検出するため<code>CoordinatedBolt</code>が使用されます。<code>CoordinatedBolt</code>は、この調整を管理するために直接ストリームを利用します。</p>
+
+<p>残りのトポロジは自明です。ご覧のように、Reach計算のすべてのステップが並行して行われ、DRPCトポロジの定義は非常に簡単でした。</p>
+
+<h3 id="non-linear-drpc-topologies">Non-linear DRPC topologies</h3>
+
+<p><code>LinearDRPCTopologyBuilder</code>は、&quot;linear&quot;なDRPCトポロジしか処理しません。ここで、計算は一連のステップ（リーチなど）として表現されます。Boltの分岐やマージなど複雑なトポロジを必要とする機能を想像するのは難しいことではありません。今のところ、これを行うには <code>CoordinatedBolt</code>を直接使用する必要があります。 DRPCトポロジのより一般的な抽象概念をつくるために、メーリングリスト上でnon-linearなDRPCトポロジのユースケースについて話し合ってください。</p>
+
+<h3 id="how-lineardrpctopologybuilder-works">How LinearDRPCTopologyBuilder works</h3>
+
+<ul>
+<li>DRPCSpoutは[args, return-info]を発行します。return-infoは、DRPCサーバーのホストとポート、およびDRPCサーバーによって生成されたIDです</li>
+<li>トポロジを構築するには以下のものが使用できます:
+
+<ul>
+<li>DRPCSpout</li>
+<li>PrepareRequest (要求IDを生成し、return-infoのストリームとargsのストリームを作成します)</li>
+<li>CoordinatedBoltのラッパーと直接グループ化</li>
+<li>JoinResult (戻り値とreturn-infoを結合する)</li>
+<li>ReturnResult (DRPCサーバーに接続して結果を返します)</li>
+</ul></li>
+<li>LinearDRPCTopologyBuilderは、Stormのプリミティブの上に構築されたより高いレベルの抽象化の良い例です</li>
+</ul>
+
+<h3 id="advanced">Advanced</h3>
+
+<ul>
+<li>複数のリクエストの処理を同時に行えるKeyedFairBolt</li>
+<li> <code>CoordinatedBolt</code>を直接使う方法</li>
+</ul>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

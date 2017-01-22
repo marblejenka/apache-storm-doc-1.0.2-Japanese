@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Apache Storm</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title"></h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>タプルは、あらゆるタイプのオブジェクトで構成できます。Stormは分散システムなので、オブジェクトをタスク間で渡したときにそれらをシリアリライズおよびデシリアライズする方法を知る必要があります。デフォルトでは、Stormはプリミティブ型、文字列、バイト配列、ArrayList、HashMap、HashSet、およびClojureコレクション型をシリアル化できます。タプルで別の型を使用する場合は、カスタムシリアライザを登録する必要があります。</p>
+
+<h3 id="dynamic-typing">Dynamic typing</h3>
+
+<p>タプルのフィールドの型宣言はありません。フィールドにオブジェクトを入れておけば、Stormは結果を動的に取り出します。シリアライゼーションのインターフェイスについて見る前に、Stormでタプルを動的型付けしている理由を理解しておきましょう。</p>
+
+<p>タプルフィールドを静的型付けとすると、StormのAPIには多大な複雑さが加わります。たとえば、Hadoopはキーやバリューを静的に型付けしますが、ユーザー側で膨大な量のアノテーションを必要とします。HadoopのAPIは使用する負担であり、&quot;型安全であること&quot;には価値がありません。動的型付けはシンプルで使い方が簡単です。</p>
+
+<p>それより、Stormのタプルを任意の方法で静的に型付けすることはできません。Boltが複数のストリームをサブスクライブしているとします。これらすべてのストリームのタプルは、フィールド間で異なるタイプを持つことがあります。Boltが<code>execute</code>で<code>Tuple</code>を受け取る際に、そのタプルはどんなストリームから来ていてもかまわないので、いろいろな型の組み合わせを持っている可能性があります。Boltがサブスクライブするすべてのタプルストリームに対して異なるメソッドを宣言できるreflection的な魔法があるかもしれませんが、Stormは動的型付けによる単純で直接的なアプローチを選択しています。</p>
+
+<p>最後に、動的型付けを使用するもう一つの理由は、ClojureやJRubyのような動的型付けを行う言語からStormを簡単に使用できることです。</p>
+
+<h3 id="custom-serialization">Custom serialization</h3>
+
+<p>Stormのカスタムシリアライゼーションを定義するためのAPIを紹介しましょう。カスタムシリアライゼーションを作成するには、シリアライザを実装し、シリアライザをStormに登録する2つのステップが必要です。</p>
+
+<h4 id="creating-a-serializer">Creating a serializer</h4>
+
+<p>カスタムシリアライザは、<a href="javadocs/backtype/storm/serialization/ISerialization.html">ISerialization</a>インタフェースを実装しています。実装では、型をバイナリ形式にシリアライズする方法およびデシリアライズする方法を指定します。</p>
+
+<p>インターフェイスは次のようになります:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ISerialization</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">accept</span><span class="o">(</span><span class="n">Class</span> <span class="n">c</span><span class="o">);</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">serialize</span><span class="o">(</span><span class="n">T</span> <span class="n">object</span><span class="o">,</span> <span class="n">DataOutputStream</span> <span class="n">stream</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="n">T</span> <span class="nf">deserialize</span><span class="o">(</span><span class="n">DataInputStream</span> <span class="n">stream</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>Stormは、このシリアライザでタイプをシリアライズできるかどうかを判断するために<code>accept</code>メソッドを使います。Stormのタプルは動的に型指定されるため、Stormは実行時にどのシリアライザを使用するかを決定します。</p>
+
+<p><code>serialize</code>はオブジェクトをバイナリ形式で出力ストリームに書き出します。フィールドは、後でデシリアライズできるような方法で記述する必要があります。たとえば、オブジェクトのリストを書き出す場合は、リストのサイズを最初に書き出して、デシリアライズする要素の数を知る必要があります。</p>
+
+<p><code>deserialize</code>は直列化されたオブジェクトをストリームから読み込んで返します。
+<code>deserialize</code> reads the serialized object off of the stream and returns it.</p>
+
+<p><a href="https://github.com/apache/incubator-storm/blob/0.5.4/src/jvm/backtype/storm/serialization/SerializationFactory.java">SerializationFactory</a>のソースで、シリアライズ実装の例を見ることができます。</p>
+
+<h4 id="registering-a-serializer">Registering a serializer</h4>
+
+<p>シリアライザを作成したら、Stormにそれが存在していることを伝える必要があります。これはStormの設定によって行われます(Stormでの設定の仕組みについては、<a href="Concepts.html">Concepts</a>を参照してください)。シリアライズを登録するには、トポロジをsubmitするときに指定した設定か、クラスタ全体のstorm.yamlファイルを使用します。</p>
+
+<p>シリアライザの登録は、Config.TOPOLOGY_SERIALIZATIONS設定を介して行われ、それは単なるシリアライゼーションクラス名のリストです。</p>
+
+<p>Stormは、シリアライザをトポロジ設定に登録するためのヘルパーを提供します。<a href="javadocs/backtype/storm/Config.html">Config</a>クラスには、<code>addSerialization</code>というメソッドがあり、シリアライザのクラスをconfigに追加します。</p>
+
+<p>Config.TOPOLOGY_SKIP_MISSING_SERIALIZATIONSという高度な設定があります。これをtrueに設定すると、Stormは登録されているクラスパス上でコードを利用できないシリアライザは無視されます。それ以外の場合、Stormはシリアライザが見つからない場合にエラーをスローします。これは、クラスタ上で異なるシリアライゼーションを持つ多数のトポロジを実行するが、 <code>storm.yaml</code>ファイル内ですべてのトポロジについてのすべてのシリアライゼーションを宣言したい場合に便利です。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

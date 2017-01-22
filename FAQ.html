@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>FAQ</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">FAQ</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h2 id="best-practices">Best Practices</h2>
+
+<h3 id="what-rules-of-thumb-can-you-give-me-for-configuring-storm-trident">What rules of thumb can you give me for configuring Storm+Trident?</h3>
+
+<ul>
+<li>ワーカーの数はマシン数の倍数とします; parallelismはワーカー数の倍数とし; Kafkaのパーティション数はSpoutの並列度の倍数とします</li>
+<li>1つのワーカーに対して1つのトポロジ、1つのトポロジに対して1つのマシンを使用します</li>
+<li>より少ない、より大きなアグリゲータからから出発し、1台のマシンに1つのワーカーがを用意する</li>
+<li>Isolation schedulerを使用する</li>
+<li>1つのワーカーに対して1つのackerを使用する -- 0.9からはデフォルトにしていますが、以前のバージョンではそうではありません。</li>
+<li>GCロギングを有効にする; うまくいっている状態では、大きなGCはほとんど発生しません。</li>
+<li>Tridentのbatch millisを典型的なエンドツーエンドレイテンシーの約50％に設定します。</li>
+<li>保留できるSpoutの最大値を、小さいと確信できる値からはじめる-- Tridentの場合は1つ、またはStormのエグゼキュータの数だけ -- そこから、流量に変化が見えなくなるまで、Spoutを増やしてください。おそらく <code>2*(throughput in recs/sec)*(end-to-end latency)</code>（リトルの法則におけるキャパシティの2倍程度）近傍に落ち着くでしょう。</li>
+</ul>
+
+<h3 id="what-are-some-of-the-best-ways-to-get-a-worker-to-mysteriously-and-bafflingly-die">What are some of the best ways to get a worker to mysteriously and bafflingly die?</h3>
+
+<ul>
+<li>ログディレクトリへの書き込み権限を持っていますか？</li>
+<li>ヒープが使い尽くされてませんか？</li>
+<li>すべてのワーカーにに適切なライブラリがすべてインストールされていますか？</li>
+<li>Zookeeperのホスト名がlocalhostに設定されていませんか？</li>
+<li>それぞれのワーカーに正確でかつユニークなホスト名 -- マシンそのものの名前解決もできるように -- を指定して、それをStormの設定ファイルに記述しましたか？</li>
+<li>ファイアウォール/セキュリティグループのパーミッションを、a) すべてのワーカー、b) Stormのマスター、c) Zookeeperの間で<em>双方向</em>にオープンしましたか？ワーカーからあなたのトポロジーがアクセスするkafka/kestrel/database/etcについてはどうですか？ netcatを使用して適切なポートを突き止めてください。</li>
+</ul>
+
+<h3 id="halp-i-cannot-see">Halp! I cannot see:</h3>
+
+<ul>
+<li><strong>my logs</strong> ログはデフォルトで$STORM_HOME/logsに配置されます。そのディレクトリへの書き込み権限があることを確認してください。それらはog4j2/{cluster, worker}.xmlで設定されます。</li>
+<li><strong>final JVM settings</strong> childoptsに<code>-XX+PrintFlagsFinal</code>コマンドラインオプションを追加します（設定ファイルを参照）</li>
+<li><strong>final Java system properties</strong> トポロジを組み立てる実装に近いところに、<code>Properties props = System.getProperties(); props.list(System.out);</code>を追加します。</li>
+</ul>
+
+<h3 id="how-many-workers-should-i-use">How many Workers should I use?</h3>
+
+<p>ワーカーの総数はスーパーバイザーによって設定されます -- スーパーバイザーが監督するJVMスロットがいくつかあります。トポロジで設定できるものは、トポロジが要求しようとするワーカースロットの数です。</p>
+
+<p>マシンごと、トポロジごとに複数のワーカーを使用する大きな理由はありません。</p>
+
+<p>1つのトポロジが8コアのノード3台にparallelism hintが24で実行されている場合、各ボルトはマシンごとに8つのエグゼキュータ、つまり各コアごとに1つのエグゼキュータを取得します。3つのワーカー（それぞれ8つのエグゼキュータが割り当てられる）を実行することには、24のワーカー（それぞれのエグゼキュータに1つ割り当て）を動かすのと比較して、3つの大きなメリットがあります。</p>
+
+<p>まず、同じワーカーのエグゼキュータに再分割されたデータ（シャッフルまたはgroup-by）は、転送バッファをヒットする必要がありません。代わりに、タプルは、送信バッファから受信バッファに直接格納されます。それは大きな勝利です。対照的に、送り先のエグゼキュータが同じマシンの別のワーカーにある場合は、send -&gt; worker transfer -&gt; local socket -&gt; worker recv -&gt; exec recv bufferという経路をたどります。それはネットワークカードをヒットしませんが、エグゼキュータが同じワーカーにいる場合と同じくらい大きな勝利はありません。</p>
+
+<p>次に、バッキングキャッシュを小さくした24個のアグリゲータを持つよりも、非常に大きなバッキングキャッシュを持つ3個のアグリゲータを使用する方が良いでしょう。これにより、スキューの影響が軽減され、LRU効率が向上します。</p>
+
+<p>最後に、ワーカーを少なくすることにより制御の流れにおける無駄が少なくなります。</p>
+
+<h2 id="topology">Topology</h2>
+
+<h3 id="can-a-trident-topology-have-multiple-streams">Can a Trident topology have Multiple Streams?</h3>
+
+<blockquote>
+<p>Tridentトポロジは、(if-else)のような条件付きパスを持つワークフローのように機能できますか?例えば、Spout(S1)がBolt(B0)に接続し、Bolt(B0)が入力タプルの特定の値に基づいて、Bolt(B1)またはBolt(B2)のいずれか一方に入力をルーティングするようなものです。</p>
+</blockquote>
+
+<p>Tridentの&quot;each&quot;演算子は、変数に格納できるStreamオブジェクトを返します。同じストリームで複数のeach演算子の結果を分割して実行することができます（例：</p>
+<div class="highlight"><pre><code class="language-" data-lang="">    Stream s = topology.each(...).groupBy(...).aggregate(...) 
+    Stream branch1 = s.each(..., FilterA) 
+    Stream branch2 = s.each(..., FilterB) 
+</code></pre></div>
+<p>join、merge、またはmultiReduceを使用してストリームを結合できます。</p>
+
+<p>執筆時点では、Tridentから複数の出力ストリームには送出できません -- <a href="https://issues.apache.org/jira/browse/STORM-68">STORM-68</a>を参照してください。</p>
+
+<h3 id="why-am-i-getting-a-notserializableexception-illegalstateexception-when-my-topology-is-being-started-up">Why am I getting a NotSerializableException/IllegalStateException when my topology is being started up?</h3>
+
+<p>Stormのライフサイクル内では、トポロジがインスタンス化された後、トポロジが実行される前にZooKeeperに格納されるバイト形式に直列化されます。このステップでにおいて、トポロジ内のSpoutまたはBoltが直列化不可能なプロパティで初期化されている場合、直列化は失敗します。直列化不可能なフィールドが必要な場合は、トポロジがワーカーに渡された後に実行されるBoltまたはSpoutのprepareメソッド内で初期化します。</p>
+
+<h2 id="spouts">Spouts</h2>
+
+<h3 id="what-is-a-coordinator-and-why-are-there-several">What is a coordinator, and why are there several?</h3>
+
+<p>TridentのSpoutは実際にはStormの<em>Bolt</em>の中で実行されます。TridentのトポロジのStorm-SpoutはMasterBatchCoordinatorです -- Tridentのバッチを調節するもので、使用するSpoutに関係なく同じです。バッチは、MBCが各Spout-coordinatorにシードタプルを分配するときに生まれます。Spout-coordinatorのBoltは、あなたの特定のSpoutがどのように協力すべきかを知っています -- Kafkaの場合、各Spoutがどのパーティションやオフセットレンジからからpullするかを決めるのを助けます。</p>
+
+<h3 id="what-can-i-store-into-the-spout-39-s-metadata-record">What can I store into the spout&#39;s metadata record?</h3>
+
+<p>できるだけ小さく静的なデータをメタデータレコードに保存するようにしてください（メモ：おそらくもっと興味深いものを保存することはできますが、そうすべきではありません）</p>
+
+<h3 id="how-often-is-the-39-emitpartitionbatchnew-39-function-called">How often is the &#39;emitPartitionBatchNew&#39; function called?</h3>
+
+<p>MBCは実際のSpoutであるため、バッチ内のすべてのタプルはそのタプルツリーのメンバーにすぎません。つまり、Stormの設定&quot;max spout pending&quot;は、Tridentが並行に実行するバッチ数を効果的に定義します。 MBCは、保持するタプル数がmax-spendingより少なく、最後のバッチ以降に少なくとも1つの<a href="http://github.com/apache/storm/blob/1.x-branch/conf/defaults.yaml#L115">trident batch interval</a>秒が経過した場合、新しいバッチを送出します。</p>
+
+<h3 id="if-nothing-was-emitted-does-trident-slow-down-the-calls">If nothing was emitted does Trident slow down the calls?</h3>
+
+<p>はい、プラグイン可能な&quot;spout wait strategy&quot;があります。デフォルトでは<a href="http://github.com/apache/storm/blob/1.x-branch/conf/defaults.yaml#L110">設定可能な時間</a>の間スリープします。</p>
+
+<h3 id="ok-then-what-is-the-trident-batch-interval-for">OK, then what is the trident batch interval for?</h3>
+
+<p>あなたは486がどのように<a href="http://en.wikipedia.org/wiki/Turbo_button">ターボボタン</a>を持っていたのか知​​っていますか？それとにたようなものです。</p>
+
+<p>実際には、2つの実用的な用途があります。 1つは、スロットル処理を行わずにリモートソースをポーリングするSpoutをスロットルできることです。たとえば、新しいバッチアップロードファイルを読み込み、改行して出力するために、指定されたS3バケットを監視するSpoutがあるとします。数秒ごとにS3をたたきに行くのは望ましくありません。ファイルは数分に1回以上更新されるわけでなく、バッチ処理に数秒かかります。</p>
+
+<p>もう1つは、スタートアップ時や重いバースト負荷のときに内部キューの過圧を制限することです -- Spoutが活性化して10バッチ分のレコードをシステムにいきなり詰め込むとすると、バッチ7からの緊急度の低いタプルを転送バッファを詰まらせ、バッチ3からの$commitタプルを妨げることになります（またはバッチ3からの通常の古いタプルさえも）。我々が行うことは、トライデントのバッチ間隔を典型的なエンドツーエンドの処理レイテンシの約半分に設定することです -- バッチを処理するのに600msかかる場合は、300msごとにバッチを開始するだけです。</p>
+
+<p>これはキャップであり、追加の遅延ではないことに注意してください -- つまり300msの周期で動作するので、バッチが258msかかった場合はTridentはさらに42msだけ遅延させることになります。</p>
+
+<h3 id="how-do-you-set-the-batch-size">How do you set the batch size?</h3>
+
+<p>Tridentはバッチ数に独自の制限を設けていません。Kafka Spoutの場合、最大フェッチバイトサイズを平均レコードサイズで割った値が、サブバッチパーティションごとの効率的なレコード数を定義します。</p>
+
+<h3 id="how-do-i-resize-a-batch">How do I resize a batch?</h3>
+
+<p>トライデントバッチは、いささか多重定義された機能です。パーティションの数とともに、バッチサイズは制約されるか定義されます</p>
+
+<ol>
+<li>トランザクション安全性の単位（タプルについてのリスクと時間のトレードオフ）</li>
+<li>パーティションごとの、ウィンドウによるストリーム解析のための効率的ななウィンドウ機構</li>
+<li>パーティションごとの、partitionQuery、partitionPersistなどによって実行される同時クエリの数。</li>
+<li>パーティションごとの、Spoutが同時にディスパッチするのに便利なレコードの数。</li>
+</ol>
+
+<p>いったん生成されると、バッチ全体のサイズを変更することはできませんが、パーティション数を変更することはできます -- シャッフルしてから、parallelism hintを変更します</p>
+
+<h2 id="time-series">Time Series</h2>
+
+<h3 id="how-do-i-aggregate-events-by-time">How do I aggregate events by time?</h3>
+
+<p>不変のタイムスタンプを持つレコードがあり、それを数えたり、平均をとったり、離散時間のバケットに集約したりする場合、Tridentはスケーラブルである優れたソリューションです。</p>
+
+<p>タイムスタンプをタイムバケットに変換する<code>Each</code>関数を書きましょう: バケツのサイズが&quot;時次&quot;の場合、タイムスタンプ<code>2013-08-08 12:34:56</code>は、時間バケット<code>2013-08-08 12:00:00</code>に対応付けられ、そして12時台の他のものもそうなります。その後、そのタイムバケットをグループ化し、グループ化されたpersistentAggregateを使用します。persistentAggregateは、データストアによってバックアップされたローカルのcacheMapを使用します。多くのレコードを持つグループでも、効率的な一括読み込みと書き込みを使用するため、データストアからの読み取りはほとんど必要ありません。あなたのデータフィードが比較的迅速である限り、Tridentはメモリとネットワークを非常に効率的に使用します。サーバーが1日の間にオフラインとなって1日分のデータを急いで配信しても、古い結果はゆっくりと取得され、更新されます -- 現在の結果の計算には影響を与えません。</p>
+
+<h3 id="how-can-i-know-that-all-records-for-a-time-bucket-have-been-received">How can I know that all records for a time bucket have been received?</h3>
+
+<p>すべてのイベントが収集されたことを知ることはできません -- これは認識論上の課題であり、分散システムの課題ではありません。できることはといえば:</p>
+
+<ul>
+<li>ドメイン知識を使って時間制限を設定する</li>
+<li><em>punctuation</em>を導入する: 指定されたタイムバケット内のすべてのレコードの後に​​来るレコードがあるとします。Tridentは、この枠組みを使用してバッチがいつ完了したかを知ります。たとえば、一連のセンサーから、そのセンサーの順番でレコードを受信した場合、すべてのセンサーが3:02:xx以降のタイムスタンプを送信した後ならコミットできることがわかります。</li>
+<li>可能であれば、あなたのプロセスを増分的にしてください: それぞれの価値は答えをより真実に近いものにします。TridentのReducerAggregatorは、直近の結果と一連の新しいレコードを取り、新しい結果を返す演算子です。これにより、結果がキャッシュされ、データストアにシリアライズされます。サーバーが1日間オフラインになってから復旧し、1日分のデータを急いで戻すと、古い結果がゆっくりと取得され、更新されます。</li>
+<li>Lambda architecture: アーカイブ・ストア(S3、HBase、HDFS)に受け取ったすべてのイベントを記録します。fast layerでは、タイムウィンドウがクリアされたら、バケットを処理して実行可能な回答を得て、タイムウィンドウより古いものはすべて無視します。グローバルアグリゲーションを定期的に実行して、&quot;正確な&quot;答えを計算します。</li>
+</ul>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

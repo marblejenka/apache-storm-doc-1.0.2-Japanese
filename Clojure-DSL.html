@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Clojure DSL</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Clojure DSL</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>StormにはSpout、Bolt、トポロジを定義するためのClojure DSLが付属しています Clojure DSLはJava APIが公開しているすべてのものにアクセスできるため、ClojureのユーザーはJavaに触れることなくStormトポロジをコーディングすることができます。Clojure DSLは、名前空間<a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/clj/org/apache/storm/clojure.clj">org.apache.storm.clojure</a>のソースで定義されています。</p>
+
+<p>このページでは、以下を含むClojure DSLのすべての部分を概説します:</p>
+
+<ol>
+<li>トポロジを定義する</li>
+<li><code>defbolt</code></li>
+<li><code>defspout</code></li>
+<li>トポロジをローカルまたはクラスタモードで実行する</li>
+<li>トポロジをテストする</li>
+</ol>
+
+<h3 id="defining-topologies">Defining topologies</h3>
+
+<p>トポロジを定義するには、<code>topology</code>関数を使用します。<code>topology</code>は2つの引数を取ります:&quot;spout specs&quot;のマップと&quot;bolt specs&quot;のマップです。各Spout仕様とBolt仕様は、入力とparallelismなどを指定することにより、コンポーネントのコードをトポロジに結線します。</p>
+
+<p><a href="http://github.com/apache/storm/blob/1.x-branch/examples/storm-starter/src/clj/org/apache/storm/starter/clj/word_count.clj">storm-starterプロジェクトの</a>トポロジ定義の例を見てみましょう:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">topology</span><span class="w">
+ </span><span class="p">{</span><span class="s">"1"</span><span class="w"> </span><span class="p">(</span><span class="nf">spout-spec</span><span class="w"> </span><span class="n">sentence-spout</span><span class="p">)</span><span class="w">
+  </span><span class="s">"2"</span><span class="w"> </span><span class="p">(</span><span class="nf">spout-spec</span><span class="w"> </span><span class="p">(</span><span class="nf">sentence-spout-parameterized</span><span class="w">
+                   </span><span class="p">[</span><span class="s">"the cat jumped over the door"</span><span class="w">
+                    </span><span class="s">"greetings from a faraway land"</span><span class="p">])</span><span class="w">
+                   </span><span class="no">:p</span><span class="w"> </span><span class="mi">2</span><span class="p">)}</span><span class="w">
+ </span><span class="p">{</span><span class="s">"3"</span><span class="w"> </span><span class="p">(</span><span class="nf">bolt-spec</span><span class="w"> </span><span class="p">{</span><span class="s">"1"</span><span class="w"> </span><span class="no">:shuffle</span><span class="w"> </span><span class="s">"2"</span><span class="w"> </span><span class="no">:shuffle</span><span class="p">}</span><span class="w">
+                 </span><span class="n">split-sentence</span><span class="w">
+                 </span><span class="no">:p</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w">
+  </span><span class="s">"4"</span><span class="w"> </span><span class="p">(</span><span class="nf">bolt-spec</span><span class="w"> </span><span class="p">{</span><span class="s">"3"</span><span class="w"> </span><span class="p">[</span><span class="s">"word"</span><span class="p">]}</span><span class="w">
+                 </span><span class="n">word-count</span><span class="w">
+                 </span><span class="no">:p</span><span class="w"> </span><span class="mi">6</span><span class="p">)})</span><span class="w">
+</span></code></pre></div>
+<p>SpoutとBolt仕様のマップは、コンポーネントIDから対応する仕様へのマップです。コンポーネントIDはマップ全体で一意でなければなりません。Javaでトポロジを定義するのと同じように、コンポーネントIDはトポロジ内のBoltの入力を宣言するときに使用されます。</p>
+
+<h4 id="spout-spec">spout-spec</h4>
+
+<p><code>spout-spec</code>は、Spoutの実装(<a href="javadocs/org/apache/storm/topology/IRichSpout.html">IRichSpout</a>を実装するオブジェクト)とオプションのキーワード引数を引数としてとります。現在存在する唯一のオプションは、Spoutのparallelismを指定する<code>:p</code>オプションです。<code>:p</code>を省略すると、Spoutは単一のタスクとして実行されます。</p>
+
+<h4 id="bolt-spec">bolt-spec</h4>
+
+<p><code>bolt-spec</code>は、入力宣言としてBoltの実装(<a href="javadocs/org/apache/storm/topology/IRichBolt.html">IRichBolt</a>を実装するオブジェクト)とオプションのキーワード引数の入力宣言を引数としてとります。</p>
+
+<p>入力宣言は、ストリームIDからストリームグルーピングに対する対応付けです。ストリームIDは、次の2つの形式のいずれかを持つことができます:</p>
+
+<ol>
+<li><code>[==component id== ==stream id==]</code>: コンポーネントの特定のストリームをサブスクライブする</li>
+<li><code>==component id==</code>: コンポーネントのデフォルトストリームをサブスクライブする</li>
+</ol>
+
+<p>ストリームグループは次のいずれかになります:</p>
+
+<ol>
+<li><code>:shuffle</code>: Shuffle Groupingでサブスクライブする</li>
+<li><code>[&quot;id&quot; &quot;name&quot;]</code>のようなフィールド名のベクトル: 指定されたフィールドのField Groupingをサブスクライブする</li>
+<li><code>:global</code>: Global Groupingでサブスクライブする</li>
+<li><code>:all</code>: All Groupingでサブスクライブする</li>
+<li><code>:direct</code>: Direct Groupingでサブスクライブする</li>
+</ol>
+
+<p>ストリームのグループ化の詳細については、<a href="Concepts.html">Concepts</a>を参照してください。次に、入力を宣言するためのさまざまな方法の例を示します。</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">{[</span><span class="s">"2"</span><span class="w"> </span><span class="s">"1"</span><span class="p">]</span><span class="w"> </span><span class="no">:shuffle</span><span class="w">
+ </span><span class="s">"3"</span><span class="w"> </span><span class="p">[</span><span class="s">"field1"</span><span class="w"> </span><span class="s">"field2"</span><span class="p">]</span><span class="w">
+ </span><span class="p">[</span><span class="s">"4"</span><span class="w"> </span><span class="s">"2"</span><span class="p">]</span><span class="w"> </span><span class="no">:global</span><span class="p">}</span><span class="w">
+</span></code></pre></div>
+<p>この入力宣言は、合計3つのストリームをサブスクライブしています。コンポーネント&quot;2&quot;のストリーム&quot;1&quot;をShuffle Groupingでサブスクライブし、コンポーネント&quot;3&quot;のデフォルトストリームをサブスクライブし、フィールド&quot;field1&quot;および&quot;field2&quot;でField Groupingし、ストリーム&quot;2&quot;にサブスクライブするコンポーネント&quot;4&quot;はGlobal Groupingをしています。</p>
+
+<p><code>spout-spec</code>と同様に、<code>bolt-spec</code>で現在サポートされている唯一のキーワード引数は<code>:p</code>で、Boltのparallelismを指定します。</p>
+
+<h4 id="shell-bolt-spec">shell-bolt-spec</h4>
+
+<p><code>shell-bolt-spec</code>は非JVM言語で実装されたボルトを定義するために使われます。引数として、入力宣言、実行するコマンドラインプログラム、Boltを実装するファイルの名前、出力仕様、そして<code>bolt-spec</code>が受け付けるのと同じキーワード引数を引数としてとります。</p>
+
+<p>次に、<code>shell-bolt-spec</code>の例を示します:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">shell-bolt-spec</span><span class="w"> </span><span class="p">{</span><span class="s">"1"</span><span class="w"> </span><span class="no">:shuffle</span><span class="w"> </span><span class="s">"2"</span><span class="w"> </span><span class="p">[</span><span class="s">"id"</span><span class="p">]}</span><span class="w">
+                 </span><span class="s">"python"</span><span class="w">
+                 </span><span class="s">"mybolt.py"</span><span class="w">
+                 </span><span class="p">[</span><span class="s">"outfield1"</span><span class="w"> </span><span class="s">"outfield2"</span><span class="p">]</span><span class="w">
+                 </span><span class="no">:p</span><span class="w"> </span><span class="mi">25</span><span class="p">)</span><span class="w">
+</span></code></pre></div>
+<p>出力宣言の構文については、後述の<code>defbolt</code>節で詳しく説明しています。Storm内でmultilangがどのように動作するかの詳細については、<a href="Using-non-JVM-languages-with-Storm.html">Stormで非JVM言語を使用する</a>を参照してください。</p>
+
+<h3 id="defbolt">defbolt</h3>
+
+<p><code>defbolt</code>はClojureでBoltを定義するために使われます。Boltには直列化が可能でなければならないという制約があります。<code>IRichBolt</code>でBoltを実装するのでは不十分なのはこのためです(closureは直列化できない)。<code>defbolt</code>はこの制限を回避し、Javaインターフェースを実装するだけでなく、Boltを定義するためのより良い構文を提供します。</p>
+
+<p><code>defbolt</code>はパラメータ化されたBoltをサポートし、Bolt実装周辺のclosureにおける状態を維持します。また、この余分な機能を必要としないBoltを定義するためのショートカットも用意されています。 <code>defbolt</code>のシグネチャは次のようになります:</p>
+
+<p>(defbolt <em>name</em> <em>output-declaration</em> *<em>option-map</em> &amp; <em>impl</em>)</p>
+
+<p>オプションマップを省略すると、<code>{:prepare false}</code>のオプションマップを持つのと同等になります。</p>
+
+<h4 id="simple-bolts">Simple bolts</h4>
+
+<p>最もシンプルな形式の<code>defbolt</code>から始めましょう。ここでは、文を含むタプルを各単語のタプルに分割するボルトの例を示します:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">defbolt</span><span class="w"> </span><span class="n">split-sentence</span><span class="w"> </span><span class="p">[</span><span class="s">"word"</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="n">tuple</span><span class="w"> </span><span class="n">collector</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">words</span><span class="w"> </span><span class="p">(</span><span class="nf">.split</span><span class="w"> </span><span class="p">(</span><span class="nf">.getString</span><span class="w"> </span><span class="n">tuple</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="s">" "</span><span class="p">)]</span><span class="w">
+    </span><span class="p">(</span><span class="nb">doseq</span><span class="w"> </span><span class="p">[</span><span class="n">w</span><span class="w"> </span><span class="n">words</span><span class="p">]</span><span class="w">
+      </span><span class="p">(</span><span class="nf">emit-bolt!</span><span class="w"> </span><span class="n">collector</span><span class="w"> </span><span class="p">[</span><span class="n">w</span><span class="p">]</span><span class="w"> </span><span class="no">:anchor</span><span class="w"> </span><span class="n">tuple</span><span class="p">))</span><span class="w">
+    </span><span class="p">(</span><span class="nf">ack!</span><span class="w"> </span><span class="n">collector</span><span class="w"> </span><span class="n">tuple</span><span class="p">)</span><span class="w">
+    </span><span class="p">))</span><span class="w">
+</span></code></pre></div>
+<p>オプションマップは省略されているので、これはnon-preparedなBoltです。DSLは<code>IRichBolt</code>の<code>execute</code>メソッドの実装を単に期待しています。この実装はタプルと<code>OutputCollector</code>の2つのパラメータをとり、<code>execute</code>関数の本体が続きます。DSLは自動的にパラメータに型ヒントをつけます。したがって、Java連携機能を使用する場合でも、リフレクションについて心配する必要はありません。</p>
+
+<p>この実装は<code>split-sentence</code>をトポロジで使うことができる実際の<code>IRichBolt</code>オブジェクトにバインドします:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">bolt-spec</span><span class="w"> </span><span class="p">{</span><span class="s">"1"</span><span class="w"> </span><span class="no">:shuffle</span><span class="p">}</span><span class="w">
+           </span><span class="n">split-sentence</span><span class="w">
+           </span><span class="no">:p</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w">
+</span></code></pre></div>
+<h4 id="parameterized-bolts">Parameterized bolts</h4>
+
+<p>多くの場合、他の引数でBoltをパラメータ化したいことがあります。たとえば、受け取ったすべての入力文字列に接尾辞を追加し、その接尾辞を実行時に設定したいと思っているとします。<code>defbolt</code>のオプションマップに <code>:params</code>オプションを含めるとできます:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">defbolt</span><span class="w"> </span><span class="n">suffix-appender</span><span class="w"> </span><span class="p">[</span><span class="s">"word"</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="no">:params</span><span class="w"> </span><span class="p">[</span><span class="n">suffix</span><span class="p">]}</span><span class="w">
+  </span><span class="p">[</span><span class="n">tuple</span><span class="w"> </span><span class="n">collector</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">emit-bolt!</span><span class="w"> </span><span class="n">collector</span><span class="w"> </span><span class="p">[(</span><span class="nb">str</span><span class="w"> </span><span class="p">(</span><span class="nf">.getString</span><span class="w"> </span><span class="n">tuple</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">suffix</span><span class="p">)]</span><span class="w"> </span><span class="no">:anchor</span><span class="w"> </span><span class="n">tuple</span><span class="p">)</span><span class="w">
+  </span><span class="p">)</span><span class="w">
+</span></code></pre></div>
+<p>前の例とは異なり、<code>suffix-appender</code>は<code>IRichBolt</code>オブジェクトではなく<code>IRichBolt</code>を返す関数にバインドされます。これは、オプションマップに<code>:params</code>を指定することによって発生します。 よって、<code>suffix-appender</code>をトポロジで使うには、次のようにします:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">bolt-spec</span><span class="w"> </span><span class="p">{</span><span class="s">"1"</span><span class="w"> </span><span class="no">:shuffle</span><span class="p">}</span><span class="w">
+           </span><span class="p">(</span><span class="nf">suffix-appender</span><span class="w"> </span><span class="s">"-suffix"</span><span class="p">)</span><span class="w">
+           </span><span class="no">:p</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w">
+</span></code></pre></div>
+<h4 id="prepared-bolts">Prepared bolts</h4>
+
+<p>結合やストリーミングアグリゲーションなど複雑なBoltを実行するには、Boltに状態を格納する必要があります。これを行うには、オプションマップに<code>{:prepare true}</code>を含めてPrepared Boltを生成します。たとえば、ワードカウントを実装するこのボルトを考えてみましょう:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">defbolt</span><span class="w"> </span><span class="n">word-count</span><span class="w"> </span><span class="p">[</span><span class="s">"word"</span><span class="w"> </span><span class="s">"count"</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="no">:prepare</span><span class="w"> </span><span class="n">true</span><span class="p">}</span><span class="w">
+  </span><span class="p">[</span><span class="n">conf</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="n">collector</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">counts</span><span class="w"> </span><span class="p">(</span><span class="nf">atom</span><span class="w"> </span><span class="p">{})]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">bolt</span><span class="w">
+     </span><span class="p">(</span><span class="nf">execute</span><span class="w"> </span><span class="p">[</span><span class="n">tuple</span><span class="p">]</span><span class="w">
+       </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">word</span><span class="w"> </span><span class="p">(</span><span class="nf">.getString</span><span class="w"> </span><span class="n">tuple</span><span class="w"> </span><span class="mi">0</span><span class="p">)]</span><span class="w">
+         </span><span class="p">(</span><span class="nf">swap!</span><span class="w"> </span><span class="n">counts</span><span class="w"> </span><span class="p">(</span><span class="nb">partial</span><span class="w"> </span><span class="nb">merge-with</span><span class="w"> </span><span class="nb">+</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="n">word</span><span class="w"> </span><span class="mi">1</span><span class="p">})</span><span class="w">
+         </span><span class="p">(</span><span class="nf">emit-bolt!</span><span class="w"> </span><span class="n">collector</span><span class="w"> </span><span class="p">[</span><span class="n">word</span><span class="w"> </span><span class="p">(</span><span class="err">@</span><span class="n">counts</span><span class="w"> </span><span class="n">word</span><span class="p">)]</span><span class="w"> </span><span class="no">:anchor</span><span class="w"> </span><span class="n">tuple</span><span class="p">)</span><span class="w">
+         </span><span class="p">(</span><span class="nf">ack!</span><span class="w"> </span><span class="n">collector</span><span class="w"> </span><span class="n">tuple</span><span class="p">)</span><span class="w">
+         </span><span class="p">)))))</span><span class="w">
+</span></code></pre></div>
+<p>Prepared Boltの実装は、トポロジの設定、<code>TopologyContext</code>ならびに<code>OutputCollector</code>を入力として受け取り、<code>IBolt</code>インタフェースの実装を返します。この設計では、<code>execute</code>と<code>cleanup</code>の実装周辺にclosureを置くことができます。</p>
+
+<p>この例では、単語数は<code>counts</code>というマップにおけるclosureに格納されます。<code>bolt</code>マクロは<code>IBolt</code>実装の生成に使用されます。<code>bolt</code>マクロは、インターフェースを実装するための具体的な実装よりも簡潔な方法であり、自動的にすべてのメソッドのパラメータに型ヒントを付けます。このBoltは、マップ内のカウントを更新し、新しい単語カウントを送出するexecuteメソッドを実装しています。</p>
+
+<p>Prepared Boltの<code>execute</code>メソッドは、<code>OutputCollector</code>がすでにその関数のclosureに入っているので、タプルを入力として受け取るだけです（単純なBoltの場合、コレクタは<code>execute</code>関数の第2パラメーターです）。</p>
+
+<p>Prepared Boltは、シンプルなボルトのようにパラメータ化することができます。</p>
+
+<h4 id="output-declarations">Output declarations</h4>
+
+<p>Clojure DSLには、Boltの出力を宣言するための簡潔な構文があります。出力を宣言する最も一般的な方法は、ストリームIDからストリーム仕様への対応付けです。例えば:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">{</span><span class="s">"1"</span><span class="w"> </span><span class="p">[</span><span class="s">"field1"</span><span class="w"> </span><span class="s">"field2"</span><span class="p">]</span><span class="w">
+ </span><span class="s">"2"</span><span class="w"> </span><span class="p">(</span><span class="nf">direct-stream</span><span class="w"> </span><span class="p">[</span><span class="s">"f1"</span><span class="w"> </span><span class="s">"f2"</span><span class="w"> </span><span class="s">"f3"</span><span class="p">])</span><span class="w">
+ </span><span class="s">"3"</span><span class="w"> </span><span class="p">[</span><span class="s">"f1"</span><span class="p">]}</span><span class="w">
+</span></code></pre></div>
+<p>ストリームIDは文字列であり、ストリーム仕様はフィールドのベクトルか<code>direct-stream</code>で囲まれたフィールドのベクトルです。<code>direct stream</code>はストリームをダイレクトストリームとしてマークします(ダイレクトストリームの詳細については、<a href="Concepts.html">Concepts</a>と<a href="">Direct groupings</a>を参照してください)。</p>
+
+<p>Boltに出力ストリームが1つしかない場合は、出力宣言にマップではなくベクトルを使用して、Boltのデフォルトストリームを定義できます。例えば:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">[</span><span class="s">"word"</span><span class="w"> </span><span class="s">"count"</span><span class="p">]</span><span class="w">
+</span></code></pre></div>
+<p>これは、Boltの出力をデフォルトのストリームIDのフィールド[&quot;word&quot; &quot;count&quot;]として宣言します。</p>
+
+<h4 id="emitting-acking-and-failing">Emitting, acking, and failing</h4>
+
+<p>DSLは<code>OutputCollector</code>でJavaのメソッドを直接使用するよりより良い関数群を提供しています: <code>emit-bolt!</code>, <code>emit-direct-bolt!</code>, <code>ack!</code>, ならびに <code>fail!</code>です。</p>
+
+<ol>
+<li><code>emit-bolt!</code>: <code>OutputCollector</code>、送出する値（Clojureのシーケンス）、<code>:anchor</code>と<code>:stream</code>のキーワード引数をパラメータとして取ります。<code>:anchor</code>は単一のタプルまたはタプルのリストであり、<code>:stream</code>は送出するストリームのIDです。 キーワード引数を省略すると、アンカーされていないタプルがデフォルトのストリームに送出されます。</li>
+<li><code>emit-direct-bolt!</code>: <code>OutputCollector</code>、タプルを送信するタスクID、する値、<code>:anchor</code>と<code>:stream</code>のキーワード引数をパラメータとしてとります。この関数は、ダイレクトストリームとして宣言されたストリームにのみ送出できます。</li>
+<li><code>ack!</code>: <code>OutputCollector</code>とackすべきタプルを引数として受け取ります。</li>
+<li><code>fail!</code>: <code>OutputCollector</code>とfailすべきタプルを引数として受け取ります。</li>
+</ol>
+
+<p>ackingとanchoringの詳細については、<a href="Guaranteeing-message-processing.html">メッセージ処理の保証</a>を参照してください。</p>
+
+<h3 id="defspout">defspout</h3>
+
+<p><code>defspout</code>はClojureでスパウトを定義するために使われます。Boltと同様に、Spoutは直列化可能でなければならないので、ClojureでSpoutの実装を行うために単に<code>IRichSpout</code>を使用することはできません。<code>defspout</code>はこの制限を回避し、Javaインターフェースを実装するだけではなく、Spoutを定義するためのより良い構文を提供します。</p>
+
+<p><code>defspout</code>のシグネチャは次のようになります：</p>
+
+<p>(defspout <em>name</em> <em>output-declaration</em> *<em>option-map</em> &amp; <em>impl</em>)</p>
+
+<p>オプションマップを省略すると、デフォルトは{:prepare true}になります。<code>defspout</code>の出力宣言は<code>defbolt</code>と同じ構文です。</p>
+
+<p>ここでは、<a href="http://github.com/apache/storm/blob/1.x-branch/examples/storm-starter/src/clj/org/apache/storm/starter/clj/word_count.clj">storm-starter</a>におけるの<code>defspout</code>の実装を示します:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">defspout</span><span class="w"> </span><span class="n">sentence-spout</span><span class="w"> </span><span class="p">[</span><span class="s">"sentence"</span><span class="p">]</span><span class="w">
+  </span><span class="p">[</span><span class="n">conf</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="n">collector</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">sentences</span><span class="w"> </span><span class="p">[</span><span class="s">"a little brown dog"</span><span class="w">
+                   </span><span class="s">"the man petted the dog"</span><span class="w">
+                   </span><span class="s">"four score and seven years ago"</span><span class="w">
+                   </span><span class="s">"an apple a day keeps the doctor away"</span><span class="p">]]</span><span class="w">
+    </span><span class="p">(</span><span class="nf">spout</span><span class="w">
+     </span><span class="p">(</span><span class="nf">nextTuple</span><span class="w"> </span><span class="p">[]</span><span class="w">
+       </span><span class="p">(</span><span class="nf">Thread/sleep</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="w">
+       </span><span class="p">(</span><span class="nf">emit-spout!</span><span class="w"> </span><span class="n">collector</span><span class="w"> </span><span class="p">[(</span><span class="nf">rand-nth</span><span class="w"> </span><span class="n">sentences</span><span class="p">)])</span><span class="w">         
+       </span><span class="p">)</span><span class="w">
+     </span><span class="p">(</span><span class="nf">ack</span><span class="w"> </span><span class="p">[</span><span class="n">id</span><span class="p">]</span><span class="w">
+        </span><span class="c1">;; You only need to define this method for reliable spouts
+</span><span class="w">        </span><span class="c1">;; (such as one that reads off of a queue like Kestrel)
+</span><span class="w">        </span><span class="c1">;; This is an unreliable spout, so it does nothing here
+</span><span class="w">        </span><span class="p">))))</span><span class="w">
+</span></code></pre></div>
+<p>実装は、トポロジの設定、<code>TopologyContext</code>と<code>SpoutOutputCollector</code>を入力として受け取ります。実装は<code>ISpout</code>オブジェクトを返します。ここで、<code>nextTuple</code>関数は、<code>sentences</code>からランダムな文を送出します。</p>
+
+<p>このSpoutはreliableでないので、<code>ack</code>メソッドと<code>fail</code>メソッドは決して呼び出されません。reliableなSpoutは、タプルを送出するときにメッセージIDを追加し、タプルが完了したときまたは失敗したときに、<code>ack</code>または<code>fail</code>が呼び出されます。Stormにおけるでの信頼性の仕組みについては、<a href="Guaranteeing-message-processing.html">メッセージ処理の保証</a>を参照してください。</p>
+
+<p><code>emit-spout!</code>は<code>SpoutOutputCollector</code>と送出される新しいタプルをパラメータとして取り込み、キーワード引数<code>:stream</code>と<code>:id</code>を受け取ります。<code>:stream</code>は送出するストリームを指定し、<code>:id</code>はタプルのメッセージIDを指定します（<code>ack</code>や<code>fail</code>コールバックで使用されます）。これらの引数を省略すると、デフォルト出力ストリームにanchorされていないタプルが送出されます。</p>
+
+<p>ダイレクトストリームにタプルを送出し、タプルを送信するタスクIDの第2パラメータとして追加の引数を取る<code>emit-direct-spout!</code>関数もあります。</p>
+
+<p>SpoutはBoltのようにパラメータ化することができます。この場合、シンボルは<code>IRichSpout</code>自体ではなく<code>IRichSpout</code>を返す関数にバインドされています。また、<code>nextTuple</code>メソッドだけを定義するunpreparedなSpoutを宣言することもできます。実行時にパラメータ化されたランダムな文章を出力する、unpreparedなSpoutの例を次に示します:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">defspout</span><span class="w"> </span><span class="n">sentence-spout-parameterized</span><span class="w"> </span><span class="p">[</span><span class="s">"word"</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="no">:params</span><span class="w"> </span><span class="p">[</span><span class="n">sentences</span><span class="p">]</span><span class="w"> </span><span class="no">:prepare</span><span class="w"> </span><span class="n">false</span><span class="p">}</span><span class="w">
+  </span><span class="p">[</span><span class="n">collector</span><span class="p">]</span><span class="w">
+  </span><span class="p">(</span><span class="nf">Thread/sleep</span><span class="w"> </span><span class="mi">500</span><span class="p">)</span><span class="w">
+  </span><span class="p">(</span><span class="nf">emit-spout!</span><span class="w"> </span><span class="n">collector</span><span class="w"> </span><span class="p">[(</span><span class="nf">rand-nth</span><span class="w"> </span><span class="n">sentences</span><span class="p">)]))</span><span class="w">
+</span></code></pre></div>
+<p>次の例は、このSpoutを<code>spout-spec</code>でどのように使うかを示しています:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">(</span><span class="nf">spout-spec</span><span class="w"> </span><span class="p">(</span><span class="nf">sentence-spout-parameterized</span><span class="w">
+                   </span><span class="p">[</span><span class="s">"the cat jumped over the door"</span><span class="w">
+                    </span><span class="s">"greetings from a faraway land"</span><span class="p">])</span><span class="w">
+            </span><span class="no">:p</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span></code></pre></div>
+<h3 id="running-topologies-in-local-mode-or-on-a-cluster">Running topologies in local mode or on a cluster</h3>
+
+<p>以上がClojure DSLのすべてです。リモートモードまたはローカルモードでトポロジを送信するには、Javaの場合と同じように<code>StormSubmitter</code>または<code>LocalCluster</code>クラスを使用してください。</p>
+
+<p>トポロジの設定を生成するには、すべての可能なコンフィグレーションの定数を定義する <code>org.apache.storm.config</code>ネームスペースを使うのが最も簡単です。定数は<code>Config</code>クラスのスタティック定数と同じですが、アンダースコアの代わりにダッシュを使用します。たとえば、次のトポロジの設定では、ワーカー数を15に設定し、トポロジをデバッグモードで設定します:</p>
+<div class="highlight"><pre><code class="language-clojure" data-lang="clojure"><span class="p">{</span><span class="n">TOPOLOGY-DEBUG</span><span class="w"> </span><span class="n">true</span><span class="w">
+ </span><span class="n">TOPOLOGY-WORKERS</span><span class="w"> </span><span class="mi">15</span><span class="p">}</span><span class="w">
+</span></code></pre></div>
+<h3 id="testing-topologies">Testing topologies</h3>
+
+<p><a href="http://www.pixelmachine.org/2011/12/17/Testing-Storm-Topologies.html">このブログの記事</a>とその<a href="http://www.pixelmachine.org/2011/12/21/Testing-Storm-Topologies-Part-2.html">フォローアップ</a>は、ClojureのトポロジをテストするためのStormの強力な組み込み機能の概要を示しています。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

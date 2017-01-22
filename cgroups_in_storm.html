@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>CGroup Enforcement</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">CGroup Enforcement</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h1 id="cgroups-in-storm">CGroups in Storm</h1>
+
+<p>CGroupはStormによって、公平性とQOSを保証するためにワーカーのリソース使用を制限するために使用されます。</p>
+
+<p><strong>注意: CGroupsは現在、Linuxプラットフォーム（カーネルバージョン2.6.24以上）でのみサポートされています</strong> </p>
+
+<h2 id="setup">Setup</h2>
+
+<p>CGroupを使用するには、cgroupをインストールし、cgroupを正しく設定するようにしてください。設定の詳細については、次をご覧ください:</p>
+
+<p><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Resource_Management_Guide/ch-Using_Control_Groups.html">https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Resource_Management_Guide/ch-Using_Control_Groups.html</a></p>
+
+<p>サンプル/デフォルトのcgconfig.confファイルは、<stormroot>/confディレクトリにあります。内容は次のとおりです:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">mount {
+    cpuset  = /cgroup/cpuset;
+    cpu = /cgroup/storm_resources;
+    cpuacct = /cgroup/cpuacct;
+    memory  = /cgroup/storm_resources;
+    devices = /cgroup/devices;
+    freezer = /cgroup/freezer;
+    net_cls = /cgroup/net_cls;
+    blkio   = /cgroup/blkio;
+}
+
+group storm {
+       perm {
+               task {
+                      uid = 500;
+                      gid = 500;
+               }
+               admin {
+                      uid = 500;
+                      gid = 500;
+               }
+       }
+       cpu {
+       }
+}
+</code></pre></div>
+<p>cgconfig.confファイルの形式と設定の詳細については、次のサイトを参照してください:</p>
+
+<p><a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Resource_Management_Guide/ch-Using_Control_Groups.html#The_cgconfig.conf_File">https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Resource_Management_Guide/ch-Using_Control_Groups.html#The_cgconfig.conf_File</a></p>
+
+<h1 id="settings-related-to-cgroups-in-storm">Settings Related To CGroups in Storm</h1>
+
+<table><thead>
+<tr>
+<th>Setting</th>
+<th>Function</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>storm.cgroup.enable</td>
+<td>この設定は、cgroupを使用するかどうかを設定するために使用されます。cgroupの使用を有効にするには&quot;true&quot;を設定します。cgroupを使用しない場合は&quot;false&quot;を設定します。このconfigをfalseに設定すると、cgroupに関連する単体テストはスキップされます。デフォルトは&quot;false&quot;に設定されています</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>storm.cgroup.hierarchy.dir</td>
+<td>Stormが使用するcgroup階層へのパス。デフォルトは&quot;/cgroup/storm_resources&quot;に設定されています</td>
+</tr>
+<tr>
+<td>storm.cgroup.resources</td>
+<td>CGroupによって制限されるサブシステムのリスト。デフォルトはcpuとメモリに設定されています。現在はCPUとメモリのみがサポートされています</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>storm.supervisor.cgroup.rootdir</td>
+<td>スーパーバイザが使用するルートcgroup。cgroupへのパスは、&lt;storm.cgroup.hierarchy.dir&gt;/&lt;storm.supervisor.cgroup.rootdir&gt;です。 デフォルトは &quot;storm&quot;に設定されています</td>
+</tr>
+<tr>
+<td>storm.cgroup.cgexec.cmd</td>
+<td>cgroup内でワーカーを起動するために使用されるcgexecコマンドの絶対パス。デフォルトは&quot;/bin/cgexec&quot;に設定されています</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>storm.worker.cgroup.memory.mb.limit</td>
+<td>各ワーカーのメモリ制限（MB）。スーパーバイザノードごとに設定できます。この設定は、cgroupのmemory.limit_in_bytesを設定するために使用されます。memory.limit_in_bytesの詳細については、https：//access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Resource_Management_Guide/sec-memory.htmlを参照してください。Resource Aware Schedulerを使用している場合、この設定はResource Aware Schedulerによって計算された値を上書きしてしまうので、この設定を使用しないでください。</td>
+</tr>
+<tr>
+<td>storm.worker.cgroup.cpu.limit</td>
+<td>各ワーカーのCPUシェア。スーパーバイザノードごとに設定できます。この設定は、cgroupのcpu.shareを設定するために使用されます。cpu.shareの詳細については、https：//access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Resource_Management_Guide/sec-cpu.htmlを参照してください。Resource Aware Schedulerを使用している場合、この設定はResource Aware Schedulerによって計算された値を上書きしてしまうので、この設定を設定しないでください。</td>
+</tr>
+</tbody></table>
+
+<p>cpu.sharesはそのプロセスのCPU使用率に比例したCPU使用率を制限するため、スーパーバイザノード上のすべてのワーカープロセスのCPU使用量を制限するためには、supervisor.cpu.capacityを設定してください。1％増やすのは1コアに対する割合を表しているので、ユーザがsupervisor.cpu.capacity：200を設定した場合、ユーザは2コアの使用を指示していることになります。</p>
+
+<h2 id="integration-with-resource-aware-scheduler">Integration with Resource Aware Scheduler</h2>
+
+<p>CGroupは、Resource Aware Schedulerと組み合わせて使用できます。CGroupsは、Resource Aware Schedulerによって割り当てられたワーカーのリソース使用を強制します。Resource Aware Schedulerでcgroupを使用するには、単にcgroupを有効にして、storm.worker.cgroup.memory.mb.limitとstorm.worker.cgroup.cpu.limit configsを設定しないでください。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

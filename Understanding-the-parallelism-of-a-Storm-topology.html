@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Understanding the Parallelism of a Storm Topology</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Understanding the Parallelism of a Storm Topology</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h2 id="what-makes-a-running-topology-worker-processes-executors-and-tasks">What makes a running topology: worker processes, executors and tasks</h2>
+
+<p>Stormは、Stormクラスタで実際にトポロジを実行するために使用される、次の3つの主なエンティティを区別します。</p>
+
+<ol>
+<li>ワーカープロセス</li>
+<li>エグゼキュータ（スレッド）</li>
+<li>タスク</li>
+</ol>
+
+<p>以下が、それらの関係を単純に図示したものです:</p>
+
+<p><img src="images/relationships-worker-processes-executors-tasks.png" alt="The relationships of worker processes, executors (threads) and tasks in Storm"></p>
+
+<p><em>ワーカープロセス</em>は、トポロジのサブセットを実行します。ワーカープロセスは特定のトポロジに属し、このトポロジの1つまたは複数のコンポーネント（SpoutまたはBolt）に対して1つまたは複数のエグゼキュータを実行できます。実行中のトポロジは、Stormクラスタ内の多くのマシンで実行されている多くのプロセスで構成されています。</p>
+
+<p><em>エグゼキュータ</em>は、ワーカープロセスによって生成されるスレッドです。同じコンポーネント（SpoutまたはBolt）に対して1つ以上のタスクを実行することがあります。</p>
+
+<p><em>タスク</em>は、実際のデータ処理を実行します - アプリケーションコードで実装するSpoutまたはBoltは、クラスタ全体で多くのタスクを実行します。コンポーネントのタスクの数は、トポロジの生存期間を通じて常に同じですが、コンポーネントのエグゼキュータ（スレッド）の数は時間とともに変化します。これは、次の条件が当てはまることを意味します: <code>#threads ≤ #tasks</code>。デフォルトでは、タスクの数はエグゼキュータの数と同じに設定されます。つまり、Stormはスレッドごとに1つのタスクを実行します。</p>
+
+<h2 id="configuring-the-parallelism-of-a-topology">Configuring the parallelism of a topology</h2>
+
+<p>Stormの用語では、&quot;parallelism&quot;とは、コンポーネントのエグゼキュータ（スレッド）の初期数を意味し、いわゆる<em>parallelism hint</em>と呼ばれるものを記述するために使用されることに注意してください。このドキュメントでは、エグゼキュータの数だけでなく、ワーカープロセスの数とStormトポロジのタスク数を設定する方法を説明するために、より一般的な意味で&quot;parallelism&quot;という用語を使用します。Stormの狭義の&quot;parallelism&quot;を使用する場合、特に断りを入れます。</p>
+
+<p>以下のセクションでは、さまざまな設定オプションの概要と、それらをコードで設定する方法について説明します。これらのオプションを設定する方法は複数ありますが、表の中にはそれらのオプションのうちのいくつかしか示していません。Stormは今のところ、以下の<a href="Configuration.html">設定の優先順位</a>を持っています: <code>defaults.yaml</code> &lt; <code>storm.yaml</code> &lt; トポロジ固有の設定 &lt; 内部的なコンポーネント固有の設定 &lt; 外部的なコンポーネント固有の設定。</p>
+
+<h3 id="number-of-worker-processes">Number of worker processes</h3>
+
+<ul>
+<li>説明: クラスタのマシンで<em>トポロジ</em>を生成するワーカープロセスの数。</li>
+<li>設定オプション: <a href="javadocs/org/apache/storm/Config.html#TOPOLOGY_WORKERS">TOPOLOGY_WORKERS</a></li>
+<li>あなたのコードで設定する方法（例）:
+
+<ul>
+<li><a href="javadocs/org/apache/storm/Config.html">Config#setNumWorkers</a></li>
+</ul></li>
+</ul>
+
+<h3 id="number-of-executors-threads">Number of executors (threads)</h3>
+
+<ul>
+<li>説明: <em>コンポーネントごとに</em>いくつのエグゼキュータを生成するか指定します。</li>
+<li>設定オプション: なし(<code>setSpout</code>または<code>setBolt</code>に<code>parallelism_hint</code>パラメータを渡します)</li>
+<li>あなたのコードで設定する方法（例）:
+
+<ul>
+<li><a href="javadocs/org/apache/storm/topology/TopologyBuilder.html">TopologyBuilder#setSpout()</a></li>
+<li><a href="javadocs/org/apache/storm/topology/TopologyBuilder.html">TopologyBuilder#setBolt()</a></li>
+<li>Storm 0.8の時点では、<code>parallelism_hint</code>パラメータは、そのBoltのエグゼキュータの初期数（タスクではありません！）を指定するようになりました。</li>
+</ul></li>
+</ul>
+
+<h3 id="number-of-tasks">Number of tasks</h3>
+
+<ul>
+<li>説明: <em>コンポーネントごとに</em>生成するするタスクの数。</li>
+<li>設定オプション: <a href="javadocs/org/apache/storm/Config.html#TOPOLOGY_TASKS">TOPOLOGY_TASKS</a></li>
+<li>あなたのコードで設定する方法（例）: 
+
+<ul>
+<li><a href="javadocs/org/apache/storm/topology/ComponentConfigurationDeclarer.html">ComponentConfigurationDeclarer#setNumTasks()</a></li>
+</ul></li>
+</ul>
+
+<p>実際に設定をしているコードスニペットの例を次に示します:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">topologyBuilder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"green-bolt"</span><span class="o">,</span> <span class="k">new</span> <span class="n">GreenBolt</span><span class="o">(),</span> <span class="mi">2</span><span class="o">)</span>
+               <span class="o">.</span><span class="na">setNumTasks</span><span class="o">(</span><span class="mi">4</span><span class="o">)</span>
+               <span class="o">.</span><span class="na">shuffleGrouping</span><span class="o">(</span><span class="s">"blue-spout"</span><span class="o">);</span>
+</code></pre></div>
+<p>上記のコードでは、エグゼキュータ2つとそれに関連する4つをタスク数の初期値として与えて、Bolt<code>GreenBolt</code>を実行するようにStormを設定しました。Stormはエグゼキュータ（スレッド）ごとに2つのタスクを実行します。明示的にタスク数を設定しない場合、Stormはデフォルトで実行プログラムごとに1つのタスクを実行します。</p>
+
+<h2 id="example-of-a-running-topology">Example of a running topology</h2>
+
+<p>次の図は、シンプルなトポロジでどのように動作するかを示しているものです。このトポロジは、<code>BlueSpout</code>と呼ばれる1つのSpuotと、<code>GreenBolt</code>および<code>YellowBolt</code>と呼ばれる2つのBoltの3つのコンポーネントで構成されています。これらのコンポーネントは、<code>BlueSpout</code>がその出力を<code>GreenBolt</code>に送るように結節されています。<code>GreenBolt</code>はその出力を<code>YellowBolt</code>に送ります。</p>
+
+<p><img src="images/example-of-a-running-topology.png" alt="Example of a running topology in Storm"></p>
+
+<p><code>GreenBolt</code>は上記のコードスニペットに従って設定されていましたが、<code>BlueSpout</code>と <code>YellowBolt</code>はparallelism hint（エグゼキュータの数）のみを設定しています 関連するコードは次のとおりです:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">Config</span> <span class="n">conf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Config</span><span class="o">();</span>
+<span class="n">conf</span><span class="o">.</span><span class="na">setNumWorkers</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span> <span class="c1">// use two worker processes</span>
+
+<span class="n">topologyBuilder</span><span class="o">.</span><span class="na">setSpout</span><span class="o">(</span><span class="s">"blue-spout"</span><span class="o">,</span> <span class="k">new</span> <span class="n">BlueSpout</span><span class="o">(),</span> <span class="mi">2</span><span class="o">);</span> <span class="c1">// set parallelism hint to 2</span>
+
+<span class="n">topologyBuilder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"green-bolt"</span><span class="o">,</span> <span class="k">new</span> <span class="n">GreenBolt</span><span class="o">(),</span> <span class="mi">2</span><span class="o">)</span>
+               <span class="o">.</span><span class="na">setNumTasks</span><span class="o">(</span><span class="mi">4</span><span class="o">)</span>
+               <span class="o">.</span><span class="na">shuffleGrouping</span><span class="o">(</span><span class="s">"blue-spout"</span><span class="o">);</span>
+
+<span class="n">topologyBuilder</span><span class="o">.</span><span class="na">setBolt</span><span class="o">(</span><span class="s">"yellow-bolt"</span><span class="o">,</span> <span class="k">new</span> <span class="n">YellowBolt</span><span class="o">(),</span> <span class="mi">6</span><span class="o">)</span>
+               <span class="o">.</span><span class="na">shuffleGrouping</span><span class="o">(</span><span class="s">"green-bolt"</span><span class="o">);</span>
+
+<span class="n">StormSubmitter</span><span class="o">.</span><span class="na">submitTopology</span><span class="o">(</span>
+        <span class="s">"mytopology"</span><span class="o">,</span>
+        <span class="n">conf</span><span class="o">,</span>
+        <span class="n">topologyBuilder</span><span class="o">.</span><span class="na">createTopology</span><span class="o">()</span>
+    <span class="o">);</span>
+</code></pre></div>
+<p>もちろん、Stormには、トポロジの並列性を制御するための追加の設定があります:</p>
+
+<ul>
+<li><a href="javadocs/org/apache/storm/Config.html#TOPOLOGY_MAX_TASK_PARALLELISM">TOPOLOGY_MAX_TASK_PARALLELISM</a>: この設定は、単一のコンポーネントに対して生成できるエグゼキュータの数に上限を設定します。これは通常、ローカルモードでトポロジを実行するときに生成されるスレッドの数を制限するために、テスト中に使用されます。このオプションは、<a href="javadocs/org/apache/storm/Config.html#setMaxTaskParallelism(int)">Config#setMaxTaskParallelism()</a>で設定できます。 </li>
+</ul>
+
+<h2 id="how-to-change-the-parallelism-of-a-running-topology">How to change the parallelism of a running topology</h2>
+
+<p>Stormのすばらしい特徴は、クラスタまたはトポロジを再起動する必要なく、ワーカープロセスやエグゼキュータの数を増減できることです。これはリバランスといいます。</p>
+
+<p>トポロジをリバランスするには、次の2つの方法があります:</p>
+
+<ol>
+<li>Storm Web UIを使用して、トポロジをリバランスします。</li>
+<li>以下に説明するように、CLIツールからstorm rebalanceを使用します。</li>
+</ol>
+
+<p>CLIツールの使用例を次に示します:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">## Reconfigure the topology "mytopology" to use 5 worker processes,
+## the spout "blue-spout" to use 3 executors and
+## the bolt "yellow-bolt" to use 10 executors.
+
+$ storm rebalance mytopology -n 5 -e blue-spout=3 -e yellow-bolt=10
+</code></pre></div>
+<h2 id="references">References</h2>
+
+<ul>
+<li><a href="Concepts.html">Concepts</a></li>
+<li><a href="Configuration.html">Configuration</a></li>
+<li><a href="Running-topologies-on-a-production-cluster.html">Running topologies on a production cluster</a>]</li>
+<li><a href="Local-mode.html">Local mode</a></li>
+<li><a href="Tutorial.html">Tutorial</a></li>
+<li><a href="javadocs/">Storm API documentation</a>, 特に<code>Config</code>クラス</li>
+</ul>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

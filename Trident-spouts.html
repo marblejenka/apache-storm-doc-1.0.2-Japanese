@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Trident Spouts</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Trident Spouts</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<h1 id="trident-spouts">Trident spouts</h1>
+
+<p>通常のStorm APIのように、SpoutはTridentトポロジのストリームのソースです。通常のStormのSpoutの上に、Tridentはより洗練されたSpoutのための追加のAPIを公開します。</p>
+
+<p>データストリームのソースと、それらのデータストリームに基づいて状態(データベースなど)を更新する方法との間には複雑な関係があります。この説明については、<a href="Trident-state.html">Trident state doc</a>を参照してください - 利用可能なSpoutのオプションを理解するには、この関係性を理解することが不可欠です。</p>
+
+<p>通常のStormのSpoutはTridentトポロジではnon-transactional spoutです。通常のStormのIRichSpoutを使用するには、TridentTopologyで次のようなストリームを作成します:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">TridentTopology</span> <span class="n">topology</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TridentTopology</span><span class="o">();</span>
+<span class="n">topology</span><span class="o">.</span><span class="na">newStream</span><span class="o">(</span><span class="s">"myspoutid"</span><span class="o">,</span> <span class="k">new</span> <span class="n">MyRichSpout</span><span class="o">());</span>
+</code></pre></div>
+<p>TridentトポロジのすべてのSpoutには、ストリームの一意の識別子が必要です - この識別子は、クラスタで実行されるすべてのトポロジで一意でなければなりません。 Tridentは、この識別子を使用して、SpoutがZookeeperで消費したことに関するメタデータ(txidとSpoutに関連付けられているメタデータなど)を格納します。</p>
+
+<p>SpoutメタデータのZookeeperストレージを設定するには、次の設定オプションを使用できます:</p>
+
+<ol>
+<li><code>transactional.zookeeper.servers</code>: Zookeeperのホスト名のリスト</li>
+<li><code>transactional.zookeeper.port</code>: Zookeeperクラスターのポート</li>
+<li><code>transactional.zookeeper.root</code>: Zookeeperのルートディレクトリで、メタデータが格納されます。メタデータは<root path>/<spout id>のパスに格納されます</li>
+</ol>
+
+<h2 id="pipelining">Pipelining</h2>
+
+<p>デフォルトでは、Tridentは一度に1つのバッチを処理し、別のバッチを試す前にバッチの成功または失敗を待ちます。バッチをパイプライン化することで、スループットが大幅に向上し、各バッチの処理待ち時間が短縮されます。&quot;topology.max.spout.pending&quot;プロパティを使用して同時に処理するバッチの最大量を設定します。</p>
+
+<p>複数のバッチを同時に処理している最中でも、Tridentはバッチ間でトポロジ内で発生する状態の更新を指示します。 たとえば、グローバル集計をデータベースに格納しているとします。バッチ1のデータベースのカウントを更新している間も、バッチ2〜10の部分カウントを計算することができます。Tridentは、バッチ1の状態更新に成功するまでバッチ2の状態更新に移行しません。これは、exactly-onceの処理セマンティクスを達成するために不可欠で、概要は<a href="Trident-state.html">Trident state doc</a>で読めます。</p>
+
+<h2 id="trident-spout-types">Trident spout types</h2>
+
+<p>以下に、使用可能なSpout APIがあります:</p>
+
+<ol>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/trident/spout/ITridentSpout.java">ITridentSpout</a>: 最も一般的なAPIで、transactionalとopaque transactionalのセマンティクスをサポートします。一般的に、このAPIを直接使うのではなく、このAPIのパーティション化されたフレーバーを使用します。</li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/trident/spout/IBatchSpout.java">IBatchSpout</a>: 一度にタプルをまとめてemitするnon-transactional spout</li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/trident/spout/IPartitionedTridentSpout.java">IPartitionedTridentSpout</a>: パーティション化されたデータソース(Kafkaサーバーのクラスタのようなもの)から読み取るtransactional spout</li>
+<li><a href="http://github.com/apache/storm/blob/1.x-branch/storm-core/src/jvm/org/apache/storm/trident/spout/IOpaquePartitionedTridentSpout.java">IOpaquePartitionedTridentSpout</a>: パーティション化されたデータソースから読み取るopaque transactional spout</li>
+</ol>
+
+<p>また、このチュートリアルの冒頭で述べたように、通常のIRichSpoutも使用できます。</p>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+

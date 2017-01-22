@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>Troubleshooting</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./assets/css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="http://fortawesome.github.io/Font-Awesome/assets/font-awesome/css/font-awesome.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="./assets/css/owl.theme.css" rel="stylesheet">
+    <link href="./assets/css/owl.carousel.css" rel="stylesheet">
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./assets/js/owl.carousel.min.js"></script>
+    <script type="text/javascript" src="./assets/js/storm.js"></script>
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+
+  <body>
+    <header>
+  <div class="container-fluid">
+     <div class="row">
+          <div class="col-md-5">
+            <a href="./index.html"><img src="./images/logo.png" class="logo" /></a>
+          </div>
+          <div class="col-md-5">
+            
+              <h1>Version: 1.0.2-Japanese</h1>
+            
+          </div>
+          <div class="col-md-2">
+            <a href="http://storm.apache.org/downloads.html" class="btn-std btn-block btn-download">Download</a>
+          </div>
+        </div>
+    </div>
+</header>
+<!--Header End-->
+<!--Navigation Begin-->
+<div class="navbar" role="banner">
+  <div class="container-fluid">
+      <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+              <li><a href="./index.html" id="home">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="contribute">Community <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./Contributing-to-Storm.html">Contributing</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+    <div class="container-fluid">
+    <h1 class="page-title">Troubleshooting</h1>
+          <div class="row">
+           	<div class="col-md-12">
+	             <!-- Documentation -->
+
+<p class="post-meta"></p>
+
+<p>このページには、Stormを使用する際に人々が遭遇した問題ならびにその解決方法が記載されています。</p>
+
+<h3 id="worker-processes-are-crashing-on-startup-with-no-stack-trace">Worker processes are crashing on startup with no stack trace</h3>
+
+<p>考えられる症状:</p>
+
+<ul>
+<li>トポロジは1つのノードで動作しますが、複数のノードではクラッシュする</li>
+</ul>
+
+<p>解決方法:</p>
+
+<ul>
+<li>サブネットが誤って設定されている可能性があります。サブネットでは、ホスト名に基づいてノードを見つけることができません。 ZeroMQは、ホストを解決できない場合にプロセスをクラッシュさせることがあります。2つのソリューションがあります。
+
+<ul>
+<li>/etc/hostsでホスト名からIPアドレスへのマッピングを行う</li>
+<li>ノードがホスト名に基づいてお互いを見つけることができるように内部DNSを設定する。</li>
+</ul></li>
+</ul>
+
+<h3 id="nodes-are-unable-to-communicate-with-each-other">Nodes are unable to communicate with each other</h3>
+
+<p>考えられる症状:</p>
+
+<ul>
+<li>すべてのスパウトタプルが失敗しています</li>
+<li>処理が動いていない</li>
+</ul>
+
+<p>解決方法:</p>
+
+<ul>
+<li>ストームはipv6では動作しません ipv4を強制するには、スーパーバイザのchild optionに<code>-Djava.net.preferIPv4Stack=true</code>を追加し、スーパーバイザを再起動します。</li>
+<li>サブネットの設定が間違っている可能性があります。<code>Worker processes are crashing on startup with no stack trace</code>の解決策を参照してください。</li>
+</ul>
+
+<h3 id="topology-stops-processing-tuples-after-awhile">Topology stops processing tuples after awhile</h3>
+
+<p>症状:</p>
+
+<ul>
+<li>処理はしばらくの間うまくいき、その後突然停止しSpoutタプルが大量に失敗する。</li>
+</ul>
+
+<p>解決方法:</p>
+
+<ul>
+<li>これはZeroMQ 2.1.10の既知の問題です。ZeroMQ 2.1.7にダウングレードしてください。</li>
+</ul>
+
+<h3 id="not-all-supervisors-appear-in-storm-ui">Not all supervisors appear in Storm UI</h3>
+
+<p>症状:</p>
+
+<ul>
+<li>いくつかのスーパバイザプロセスがStorm UIで見つからない</li>
+<li>Storm UIをリフレッシュするとスーパバイザが違うものになる</li>
+</ul>
+
+<p>解決方法:</p>
+
+<ul>
+<li>スーパーバイザのローカルディレクトリが独立していることを確認する(NFS上でローカルディレクトリを共有していないかなど)</li>
+<li>スーパーバイザのローカルディレクトリを削除し、デーモンを再起動してください。スーパーバイザは、ユニークなIDを作成してローカルに格納します。そのIDが他のノードにコピーされると、Stormは混乱します。</li>
+</ul>
+
+<h3 id="quot-multiple-defaults-yaml-found-quot-error">&quot;Multiple defaults.yaml found&quot; error</h3>
+
+<p>症状:</p>
+
+<ul>
+<li>&quot;storm jar&quot;でトポロジをデプロイすると、このエラーが発生する</li>
+</ul>
+
+<p>解決方法:</p>
+
+<ul>
+<li>トポロジのjarの中にStormのjarを入れている可能性が最も高いです。あなたのトポロジをjarにパッケージするときは、Stormのjarを含めないでください。Stormのjarはクラスパスに入るはずです。</li>
+</ul>
+
+<h3 id="quot-nosuchmethoderror-quot-when-running-storm-jar">&quot;NoSuchMethodError&quot; when running storm jar</h3>
+
+<p>症状:</p>
+
+<ul>
+<li>Stormのjarを実行する際に、謎の&quot;NoSuchMethodError&quot;が発生する</li>
+</ul>
+
+<p>解決方法:</p>
+
+<ul>
+<li>あなたはあなたのトポロジをビルドしたのとは異なるバージョンのStormに、あなたのトポロジをデプロイしています。使用するStormクライアントが、トポロジをコンパイルしたバージョンと同じバージョンであることを確認してください。</li>
+</ul>
+
+<h3 id="kryo-concurrentmodificationexception">Kryo ConcurrentModificationException</h3>
+
+<p>症状:</p>
+
+<ul>
+<li>実行時に、次のようなスタックトレースが出てくる:</li>
+</ul>
+<div class="highlight"><pre><code class="language-" data-lang="">java.lang.RuntimeException: java.util.ConcurrentModificationException
+    at org.apache.storm.utils.DisruptorQueue.consumeBatchToCursor(DisruptorQueue.java:84)
+    at org.apache.storm.utils.DisruptorQueue.consumeBatchWhenAvailable(DisruptorQueue.java:55)
+    at org.apache.storm.disruptor$consume_batch_when_available.invoke(disruptor.clj:56)
+    at org.apache.storm.disruptor$consume_loop_STAR_$fn__1597.invoke(disruptor.clj:67)
+    at org.apache.storm.util$async_loop$fn__465.invoke(util.clj:377)
+    at clojure.lang.AFn.run(AFn.java:24)
+    at java.lang.Thread.run(Thread.java:679)
+Caused by: java.util.ConcurrentModificationException
+    at java.util.LinkedHashMap$LinkedHashIterator.nextEntry(LinkedHashMap.java:390)
+    at java.util.LinkedHashMap$EntryIterator.next(LinkedHashMap.java:409)
+    at java.util.LinkedHashMap$EntryIterator.next(LinkedHashMap.java:408)
+    at java.util.HashMap.writeObject(HashMap.java:1016)
+    at sun.reflect.GeneratedMethodAccessor17.invoke(Unknown Source)
+    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.lang.reflect.Method.invoke(Method.java:616)
+    at java.io.ObjectStreamClass.invokeWriteObject(ObjectStreamClass.java:959)
+    at java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1480)
+    at java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1416)
+    at java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1174)
+    at java.io.ObjectOutputStream.writeObject(ObjectOutputStream.java:346)
+    at org.apache.storm.serialization.SerializableSerializer.write(SerializableSerializer.java:21)
+    at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:554)
+    at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:77)
+    at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:18)
+    at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:472)
+    at org.apache.storm.serialization.KryoValuesSerializer.serializeInto(KryoValuesSerializer.java:27)
+</code></pre></div>
+<p>解決方法: </p>
+
+<ul>
+<li>これは出力タプルとして可変オブジェクトを出力していることを意味します。出力コレクターにemitするすべてのものはimmutableでなければなりません。何が起こっているのは、あなたのBoltが、ネットワーク上で送信されるようにシリアル化されている間にオブジェクトを修正しているということです。</li>
+</ul>
+
+<h3 id="nullpointerexception-from-deep-inside-storm">NullPointerException from deep inside Storm</h3>
+
+<p>症状:</p>
+
+<ul>
+<li>次のようなNullPointerExceptionが出てくる:</li>
+</ul>
+<div class="highlight"><pre><code class="language-" data-lang="">java.lang.RuntimeException: java.lang.NullPointerException
+    at org.apache.storm.utils.DisruptorQueue.consumeBatchToCursor(DisruptorQueue.java:84)
+    at org.apache.storm.utils.DisruptorQueue.consumeBatchWhenAvailable(DisruptorQueue.java:55)
+    at org.apache.storm.disruptor$consume_batch_when_available.invoke(disruptor.clj:56)
+    at org.apache.storm.disruptor$consume_loop_STAR_$fn__1596.invoke(disruptor.clj:67)
+    at org.apache.storm.util$async_loop$fn__465.invoke(util.clj:377)
+    at clojure.lang.AFn.run(AFn.java:24)
+    at java.lang.Thread.run(Thread.java:662)
+Caused by: java.lang.NullPointerException
+    at org.apache.storm.serialization.KryoTupleSerializer.serialize(KryoTupleSerializer.java:24)
+    at org.apache.storm.daemon.worker$mk_transfer_fn$fn__4126$fn__4130.invoke(worker.clj:99)
+    at org.apache.storm.util$fast_list_map.invoke(util.clj:771)
+    at org.apache.storm.daemon.worker$mk_transfer_fn$fn__4126.invoke(worker.clj:99)
+    at org.apache.storm.daemon.executor$start_batch_transfer__GT_worker_handler_BANG_$fn__3904.invoke(executor.clj:205)
+    at org.apache.storm.disruptor$clojure_handler$reify__1584.onEvent(disruptor.clj:43)
+    at org.apache.storm.utils.DisruptorQueue.consumeBatchToCursor(DisruptorQueue.java:81)
+    ... 6 more
+</code></pre></div>
+<p>または、 </p>
+<div class="highlight"><pre><code class="language-" data-lang="">java.lang.RuntimeException: java.lang.NullPointerException
+        at
+org.apache.storm.utils.DisruptorQueue.consumeBatchToCursor(DisruptorQueue.java:128)
+~[storm-core-0.9.3.jar:0.9.3]
+        at
+org.apache.storm.utils.DisruptorQueue.consumeBatchWhenAvailable(DisruptorQueue.java:99)
+~[storm-core-0.9.3.jar:0.9.3]
+        at
+org.apache.storm.disruptor$consume_batch_when_available.invoke(disruptor.clj:80)
+~[storm-core-0.9.3.jar:0.9.3]
+        at
+org.apache.storm.disruptor$consume_loop_STAR_$fn__759.invoke(disruptor.clj:94)
+~[storm-core-0.9.3.jar:0.9.3]
+        at org.apache.storm.util$async_loop$fn__458.invoke(util.clj:463)
+~[storm-core-0.9.3.jar:0.9.3]
+        at clojure.lang.AFn.run(AFn.java:24) [clojure-1.5.1.jar:na]
+        at java.lang.Thread.run(Thread.java:745) [na:1.7.0_65]
+Caused by: java.lang.NullPointerException: null
+        at clojure.lang.RT.intCast(RT.java:1087) ~[clojure-1.5.1.jar:na]
+        at
+org.apache.storm.daemon.worker$mk_transfer_fn$fn__3548.invoke(worker.clj:129)
+~[storm-core-0.9.3.jar:0.9.3]
+        at
+org.apache.storm.daemon.executor$start_batch_transfer__GT_worker_handler_BANG_$fn__3282.invoke(executor.clj:258)
+~[storm-core-0.9.3.jar:0.9.3]
+        at
+org.apache.storm.disruptor$clojure_handler$reify__746.onEvent(disruptor.clj:58)
+~[storm-core-0.9.3.jar:0.9.3]
+        at
+org.apache.storm.utils.DisruptorQueue.consumeBatchToCursor(DisruptorQueue.java:125)
+~[storm-core-0.9.3.jar:0.9.3]
+        ... 6 common frames omitted
+</code></pre></div>
+<p>解決方法:</p>
+
+<ul>
+<li>これは、複数のスレッドが<code>OutputCollector</code>に何かしらのメソッドを発行することによって発生します。すべてのemit、ack、およびfailは、同じスレッドで発生する必要があります。これが起こる可能性のある微妙な方法の1つは、別のスレッドでemitを行う<code>IBasicBolt</code>を作成する場合です。<code>IBasicBolt</code>では、executeの後に自動的にackが呼び出されるので、複数のスレッドで<code>OutputCollector</code>を使用するとこの例外を起こしえます。Basic Boltを使用する場合、すべてのemitは<code>execute</code>を実行するのと同じスレッドで行わなければなりません。</li>
+</ul>
+
+
+
+	          </div>
+	       </div>
+	  </div>
+<footer>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Meetups</h5>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>About Storm</h5>
+                    <p>Storm integrates with any queueing system and any database system. Storm's spout abstraction makes it easy to integrate a new queuing system. Likewise, integrating Storm with database systems is easy.</p>
+               </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>First Look</h5>
+                    <ul class="footer-list">
+                        <li><a href="./Rationale.html">Rationale</a></li>
+                        <li><a href="./Tutorial.html">Tutorial</a></li>
+                        <li><a href="./Setting-up-development-environment.html">Setting up development environment</a></li>
+                        <li><a href="./Creating-a-new-Storm-project.html">Creating a new Storm project</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="footer-widget">
+                    <h5>Documentation</h5>
+                    <ul class="footer-list">
+                        <li><a href="./index.html">Index</a></li>
+                        <li><a href="./javadocs/index.html">Javadoc</a></li>
+                        <li><a href="./FAQ.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row">   
+            <div class="col-md-12">
+                <p align="center">Copyright © 2015 <a href="http://www.apache.org">Apache Software Foundation</a>. All Rights Reserved. 
+                    <br>Apache Storm, Apache, the Apache feather logo, and the Apache Storm project logos are trademarks of The Apache Software Foundation. 
+                    <br>All other marks mentioned may be trademarks or registered trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<!--Footer End-->
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="fa fa-angle-up"></i></a></span> 
+
+</body>
+
+</html>
+
